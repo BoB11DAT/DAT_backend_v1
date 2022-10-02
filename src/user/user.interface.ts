@@ -40,5 +40,4 @@ export interface CreateUser {
   address: string;
   address_detail: string;
   accountType: number;
-  role: number;
 }

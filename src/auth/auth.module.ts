@@ -8,12 +8,22 @@ import { LocalStrategy } from "./local.strategy";
 import { GoogleStrategy } from "./google.strategy";
 import { JWTStrategy } from "./jwt.strategy";
 import { JwtModule } from "@nestjs/jwt";
+import { RefreshStrategy } from "./refresh.strategy";
 import { ConfigService } from "@nestjs/config";
+import { AccessStrategy } from "./access.strategy";
 
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity]), PassportModule, JwtModule],
 
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, GoogleStrategy, JWTStrategy],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    GoogleStrategy,
+    JWTStrategy,
+    RefreshStrategy,
+    ConfigService,
+    AccessStrategy,
+  ],
 })
 export class AuthModule {}

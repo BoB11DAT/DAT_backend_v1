@@ -21,8 +21,8 @@ export class AuthController {
     private readonly config: ConfigService,
   ) {}
 
-  @UseGuards(AuthGuard("jwt"))
   @Get()
+  @UseGuards(AuthGuard("jwt-access-token"))
   getHello(): string {
     return this.authService.getHello();
   }
@@ -32,9 +32,9 @@ export class AuthController {
     return this.authService.createUser(userData);
   }
 
+  @Post("login")
   @HttpCode(200)
   @UseGuards(AuthGuard("local"))
-  @Post("login")
   async login(@Req() req, @Res() res) {
     const { user } = req;
     const refreshToken = await this.authService.getRefreshToken(user.id);
@@ -56,5 +56,12 @@ export class AuthController {
   @UseGuards(AuthGuard("google"))
   googleAuthRedirect(@Req() req) {
     return this.authService.googleLogin(req);
+  }
+
+  @Get("refresh")
+  @UseGuards(AuthGuard("jwt-refresh-token"))
+  async refreshAccessToken(@Req() req) {
+    const { user } = req;
+    return this.authService.getAccessToken(user.id);
   }
 }

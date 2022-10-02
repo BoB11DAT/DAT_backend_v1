@@ -17,7 +17,7 @@ export class UserEntity {
   @Column({ nullable: false, unique: true })
   email: string;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, unique: true })
   username: string;
 
   @Column({ nullable: false })
@@ -29,7 +29,7 @@ export class UserEntity {
   @Column({ type: "bigint", nullable: false })
   birth: number;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, unique: true })
   tell: string;
 
   @Column({ nullable: false })

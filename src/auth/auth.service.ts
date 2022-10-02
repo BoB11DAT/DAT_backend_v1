@@ -67,11 +67,11 @@ export class AuthService {
         expiresIn: this.config.get("REFRESH_TOKEN_EXPIRES_IN"),
       },
     );
-    await this.userRepository.update(id, { refreshToken });
+    await this.userRepository.update({ id }, { refreshToken });
     return refreshToken;
   }
 
-  getAccessToken(id: string): string {
+  getAccessToken(id: string): object {
     const accessToken = this.jwtService.sign(
       { id },
       {
@@ -79,7 +79,7 @@ export class AuthService {
         expiresIn: this.config.get("ACCESS_TOKEN_EXPIRES_IN"),
       },
     );
-    return accessToken;
+    return { accessToken: accessToken };
   }
 
   logout() {
