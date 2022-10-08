@@ -8,13 +8,16 @@ import {
   Req,
   Res,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { AuthGuard } from "@nestjs/passport";
 import { AuthService } from "./auth.service";
 import { CreateUser } from "src/user/user.interface";
 import { UserEntity } from "src/user/user.entity";
-import { ConfigService } from "@nestjs/config";
 
-@Controller("auth")
+@Controller({
+  path: "auth",
+  version: "1",
+})
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
@@ -22,12 +25,11 @@ export class AuthController {
   ) {}
 
   @Get()
-  @UseGuards(AuthGuard("jwt-access-token"))
   getHello(): string {
     return this.authService.getHello();
   }
 
-  @Post("create")
+  @Post("register")
   async createUser(@Body() userData: CreateUser): Promise<UserEntity> {
     return this.authService.createUser(userData);
   }
@@ -61,7 +63,26 @@ export class AuthController {
   @Get("refresh")
   @UseGuards(AuthGuard("jwt-refresh-token"))
   async refreshAccessToken(@Req() req) {
-    const { user } = req;
-    return this.authService.getAccessToken(user.id);
+    return this.authService.getAccessToken(req.cookies.refreshToken);
+  }
+
+  @Get("logout")
+  @UseGuards(AuthGuard("jwt-refresh-token"))
+  async logout(@Req() req, @Res() res) {
+    const COOKIE_OPTION = this.authService.deleteRefreshToken(
+      req.cookies.refreshToken,
+    );
+    res.clearCookie("refreshToken", COOKIE_OPTION);
+    return res.redirect(this.config.get("CLIENT_URL"));
+  }
+
+  @Post("valid/password")
+  @HttpCode(200)
+  @UseGuards(AuthGuard("jwt-access-token"))
+  async validPassword(@Req() req) {
+    return this.authService.validPassword(
+      req.headers.authorization.split(" ")[1],
+      req.body.pw,
+    );
   }
 }

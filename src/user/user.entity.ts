@@ -1,9 +1,13 @@
+import { IsEmail } from "class-validator";
+import bcrypt from "bcrypt";
 import {
   Column,
   CreateDateColumn,
   Entity,
   UpdateDateColumn,
   PrimaryGeneratedColumn,
+  BeforeInsert,
+  BeforeUpdate,
 } from "typeorm";
 
 @Entity("users")
@@ -11,13 +15,14 @@ export class UserEntity {
   @PrimaryGeneratedColumn("uuid")
   uuid: string;
 
-  @Column({ nullable: false, unique: true })
+  @Column({ length: 20, nullable: false, unique: true })
   id: string;
 
   @Column({ nullable: false, unique: true })
+  @IsEmail()
   email: string;
 
-  @Column({ nullable: false, unique: true })
+  @Column({ length: 20, nullable: false, unique: true })
   username: string;
 
   @Column({ nullable: false })
@@ -26,8 +31,8 @@ export class UserEntity {
   @Column({ type: "int", nullable: false })
   gender: number;
 
-  @Column({ type: "bigint", nullable: false })
-  birth: number;
+  @Column({ nullable: false })
+  birth: Date;
 
   @Column({ nullable: false, unique: true })
   tell: string;
@@ -50,15 +55,30 @@ export class UserEntity {
   @Column({ type: "int", default: 0, nullable: false })
   accountType: number;
 
-  @Column({ type: "int", default: 0, nullable: false })
+  @Column({ type: "int", default: 0, nullable: false, insert: false })
   role: number;
 
   @Column({ length: 200, nullable: true, select: false })
   refreshToken: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ insert: false, select: false })
   createdDate: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ insert: false, select: false })
   updatedDate: Date;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  async savePw(): Promise<void> {
+    if (this.pw) {
+      this.pw = await bcrypt.hash(this.pw, 10);
+    }
+  }
+
+  @BeforeInsert()
+  nullUUID(): void {
+    if (this.uuid) {
+      delete this.uuid;
+    }
+  }
 }

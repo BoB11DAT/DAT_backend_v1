@@ -41,3 +41,14 @@ export interface CreateUser {
   address_detail: string;
   accountType: number;
 }
+
+export interface UpdateUser {
+  email: string;
+  username: string;
+  pw: string;
+  belong: string;
+  duty: string;
+  zip_code: string;
+  address: string;
+  address_detail: string;
+}

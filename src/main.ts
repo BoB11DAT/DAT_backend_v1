@@ -1,9 +1,10 @@
-import { INestApplication, Logger } from "@nestjs/common";
+import { INestApplication, Logger, VersioningType } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
+import { AccessGuard } from "./auth/access.guard";
 
 async function swagger(app: INestApplication) {
   const config = new DocumentBuilder()
@@ -21,7 +22,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = app.get(ConfigService);
-  app.setGlobalPrefix("api/v1");
+  app.enableVersioning({
+    type: VersioningType.MEDIA_TYPE,
+    key: "v=",
+  });
   app.use(cookieParser());
   app.enableCors({
     origin: config.get<string>("CORS_ORIGIN"),
