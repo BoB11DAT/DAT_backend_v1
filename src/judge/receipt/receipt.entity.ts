@@ -2,7 +2,9 @@ import {
   Column,
   Entity,
   PrimaryGeneratedColumn,
-  DeleteDateColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  AfterInsert,
 } from "typeorm";
 
 @Entity("receipts")
@@ -16,9 +18,44 @@ export class ReceiptEntity {
   @Column({ nullable: false })
   receipt_start: Date;
 
-  @DeleteDateColumn({ nullable: false })
+  @Column({ nullable: false })
   receipt_end: Date;
 
-  @Column({ nullable: false, default: 0 })
-  receipt_type: number;
+  @Column({ nullable: false })
+  receipt_type: string;
+
+  @CreateDateColumn()
+  receipt_create_date: Date;
+
+  @UpdateDateColumn()
+  receipt_update_date: Date;
+}
+
+@Entity("receipt_registrations")
+export class ReceiptRegistrationEntity {
+  @PrimaryGeneratedColumn("increment")
+  receipt_registration_id: number;
+
+  @Column({ nullable: false })
+  user_uuid: string;
+
+  @Column({ nullable: false })
+  receipt_id: number;
+
+  @Column({ nullable: false })
+  receipt_registration_number: string;
+
+  @CreateDateColumn()
+  receipt_registration_date: Date;
+
+  @UpdateDateColumn()
+  receipt_registration_update_date: Date;
+
+  @AfterInsert()
+  async createRegistrationNumber() {
+    this.receipt_registration_number =
+      this.receipt_registration_number.replace("P", "D") +
+      "-" +
+      this.receipt_registration_id.toString().padStart(4, "0");
+  }
 }

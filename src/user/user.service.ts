@@ -3,7 +3,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
-import bcrypt from "bcrypt";
 import { UserEntity } from "./user.entity";
 import { UpdateUser } from "./user.interface";
 
@@ -19,27 +18,30 @@ export class UserService {
     return "Hello World!";
   }
 
-  getIdFromReq(req: any): string {
+  getUUIDFromReq(req: any): string {
     return this.jwtService.verify(req.headers.authorization.split(" ")[1], {
       secret: this.config.get("ACCESS_TOKEN_SECRET"),
-    }).id;
+    }).uuid;
   }
 
   async findAll(): Promise<UserEntity[]> {
     return await this.userRepository.find();
   }
 
-  async getUserById(id: string): Promise<UserEntity> {
-    return this.userRepository.findOne({ where: { id } });
+  async fetchUser(id: string): Promise<UserEntity> {
+    return await this.userRepository.findOne({ where: { id } });
   }
 
-  async updateUser(id: string, user: UpdateUser): Promise<any> {
-    const userBefore = await this.getUserById(id);
+  async getUserByUUID(uuid: string): Promise<UserEntity> {
+    return this.userRepository.findOne({ where: { uuid } });
+  }
+
+  async updateUser(uuid: string, user: UpdateUser): Promise<any> {
     const userUpdate = this.userRepository.create({
-      ...userBefore,
+      uuid,
       ...user,
     });
     await this.userRepository.save(userUpdate);
-    return this.getUserById(id);
+    return this.getUserByUUID(uuid);
   }
 }

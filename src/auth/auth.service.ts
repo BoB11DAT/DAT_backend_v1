@@ -23,31 +23,40 @@ export class AuthService {
 
   async createUser(userData: CreateUser): Promise<UserEntity> {
     if (
-      (await this.getUserById(userData.id)) ||
+      (await this.getUserByUUID(userData.id)) ||
       (await this.getUserByEmail(userData.email))
     ) {
       throw new HttpException("User or Email already exists", 400);
     }
     const newUser = await this.userRepository.create(userData);
     await this.userRepository.save(newUser);
-    return this.getUserById(userData.id);
+    return this.getUserByUUID(userData.id);
   }
 
   async validateUser(id: string, pw: string): Promise<UserEntity> {
-    const user = await this.getUserPwById(id);
+    const uuid = await this.getUUIDbyId(id);
+    const user = await this.getUserPwByUUID(uuid);
     if (user && (await bcrypt.compare(pw, user.pw))) {
       return user;
     }
     return null;
   }
 
-  async getUserById(id: string): Promise<UserEntity> {
-    return await this.userRepository.findOne({ where: { id } });
+  async getUUIDbyId(id: string): Promise<string> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      select: ["uuid"],
+    });
+    return user.uuid;
   }
 
-  async getUserPwById(id: string): Promise<UserEntity> {
+  async getUserByUUID(uuid: string): Promise<UserEntity> {
+    return await this.userRepository.findOne({ where: { uuid } });
+  }
+
+  async getUserPwByUUID(uuid: string): Promise<UserEntity> {
     return await this.userRepository.findOne({
-      where: { id },
+      where: { uuid },
       select: ["id", "pw"],
     });
   }
@@ -56,9 +65,9 @@ export class AuthService {
     return await this.userRepository.findOne({ where: { email } });
   }
 
-  async getUserRefreshTokenById(id: string): Promise<UserEntity> {
+  async getUserRefreshTokenByUUID(uuid: string): Promise<UserEntity> {
     return await this.userRepository.findOne({
-      where: { id },
+      where: { uuid },
       select: ["refreshToken"],
     });
   }
@@ -71,19 +80,23 @@ export class AuthService {
   }
 
   async getRefreshToken(id: string): Promise<string> {
-    const refreshToken = this.getToken(id, "REFRESH");
-    await this.userRepository.update({ id }, { refreshToken });
+    const uuid = await this.getUUIDbyId(id);
+    const refreshToken = this.getToken(uuid, "REFRESH");
+    await this.userRepository.update({ uuid }, { refreshToken });
     return refreshToken;
   }
 
   getAccessToken(refreshToken: string): object {
-    const id = this.getIdFromToken(refreshToken, "REFRESH");
-    const accessToken = this.getToken(id, "ACCESS");
+    const uuid = this.getUUIDFromToken(refreshToken, "REFRESH");
+    const accessToken = this.getToken(uuid, "ACCESS");
     return { accessToken: accessToken };
   }
 
-  async refreshTokenMatch(id: string, refreshToken: string): Promise<boolean> {
-    const user = await this.getUserRefreshTokenById(id);
+  async refreshTokenMatch(
+    uuid: string,
+    refreshToken: string,
+  ): Promise<boolean> {
+    const user = await this.getUserRefreshTokenByUUID(uuid);
     if (user?.refreshToken === refreshToken) {
       return true;
     }
@@ -91,8 +104,8 @@ export class AuthService {
   }
 
   async deleteRefreshToken(refreshToken: string): Promise<object> {
-    const id = this.getIdFromToken(refreshToken, "REFRESH");
-    await this.userRepository.update({ id }, { refreshToken: null as any });
+    const uuid = this.getUUIDFromToken(refreshToken, "REFRESH");
+    await this.userRepository.update({ uuid }, { refreshToken: null as any });
     return {
       domain: this.config.get("SERVICE_DOMAIN"),
       path: "/",
@@ -101,9 +114,9 @@ export class AuthService {
     };
   }
 
-  getToken(id: string, kind: string): string {
+  getToken(uuid: string, kind: string): string {
     return this.jwtService.sign(
-      { id },
+      { uuid },
       {
         secret: this.config.get(`${kind}_TOKEN_SECRET`),
         expiresIn: this.config.get(`${kind}_TOKEN_EXPIRES_IN`),
@@ -111,15 +124,15 @@ export class AuthService {
     );
   }
 
-  getIdFromToken(token: string, kind: string): string {
+  getUUIDFromToken(token: string, kind: string): string {
     return this.jwtService.verify(token, {
       secret: this.config.get(`${kind}_TOKEN_SECRET`),
-    }).id;
+    }).uuid;
   }
 
   async validPassword(accessToken: string, pw: string): Promise<boolean> {
-    const id = this.getIdFromToken(accessToken, "ACCESS");
-    const user = await this.getUserPwById(id);
+    const id = this.getUUIDFromToken(accessToken, "ACCESS");
+    const user = await this.getUserPwByUUID(id);
     if (user && (await bcrypt.compare(pw, user.pw))) {
       return true;
     }
@@ -127,8 +140,8 @@ export class AuthService {
   }
 
   async checkAdmin(accessToken: string): Promise<boolean> {
-    const id = this.getIdFromToken(accessToken, "ACCESS");
-    const user = await this.getUserById(id);
+    const uuid = this.getUUIDFromToken(accessToken, "ACCESS");
+    const user = await this.getUserByUUID(uuid);
     if (user && user.role === 1) {
       return true;
     }

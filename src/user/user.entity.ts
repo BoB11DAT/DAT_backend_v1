@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   BeforeInsert,
   BeforeUpdate,
+  DeleteDateColumn,
 } from "typeorm";
 
 @Entity("users")
@@ -25,7 +26,7 @@ export class UserEntity {
   @Column({ length: 20, nullable: false, unique: true })
   username: string;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, select: false })
   pw: string;
 
   @Column({ type: "int", nullable: false })
@@ -66,6 +67,9 @@ export class UserEntity {
 
   @UpdateDateColumn({ insert: false, select: false })
   updatedDate: Date;
+
+  @DeleteDateColumn({ insert: false, select: false })
+  deleted_at: Date;
 
   @BeforeInsert()
   @BeforeUpdate()

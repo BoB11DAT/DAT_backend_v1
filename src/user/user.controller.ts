@@ -24,6 +24,7 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
+  @UseGuards(AccessGuard)
   getHello(): string {
     return this.userService.getHello();
   }
@@ -38,14 +39,14 @@ export class UserController {
   @HttpCode(200)
   @UseGuards(AdminGuard)
   async fetchUser(@Body() body): Promise<UserEntity> {
-    return this.userService.getUserById(body.id);
+    return this.userService.fetchUser(body.id);
   }
 
   @Patch()
   @UseGuards(AccessGuard)
   async updateUser(@Req() req, @Body() user: UpdateUser): Promise<UserEntity> {
     return this.userService.updateUser(
-      this.userService.getIdFromReq(req),
+      this.userService.getUUIDFromReq(req),
       user,
     );
   }
