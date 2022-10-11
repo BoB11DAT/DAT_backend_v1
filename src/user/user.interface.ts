@@ -2,44 +2,44 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class UpdateUser {
   @ApiProperty()
-  id: string;
+  user_uuid: string;
 }
 
 export interface User {
-  uuid: string;
-  id: string;
-  email: string;
-  username: string;
-  pw: string;
-  gender: number;
-  birth: number;
-  tell: string;
-  belong: string;
-  duty: string;
-  zip_code: string;
-  address: string;
-  address_detail: string;
-  accountType: number;
-  role: number;
-  refreshToken: string;
-  createdDate: Date;
-  updatedDate: Date;
+  user_uuid: string;
+  user_id: string;
+  user_email: string;
+  user_username: string;
+  user_pw: string;
+  user_gender: number;
+  user_birth: number;
+  user_tell: string;
+  user_belong: string;
+  user_duty: string;
+  user_zip_code: string;
+  user_address: string;
+  user_address_detail: string;
+  user_account_type: number;
+  user_role: number;
+  user_refresh_token: string;
+  user_created_date: Date;
+  user_updated_Date: Date;
 }
 
 export interface CreateUser {
-  id: string;
-  email: string;
-  username: string;
-  pw: string;
-  gender: number;
-  birth: number;
-  tell: string;
-  belong: string;
-  duty: string;
-  zip_code: string;
-  address: string;
-  address_detail: string;
-  accountType: number;
+  user_id: string;
+  user_email: string;
+  user_username: string;
+  user_pw: string;
+  user_gender: number;
+  user_birth: number;
+  user_tell: string;
+  user_belong: string;
+  user_duty: string;
+  user_zip_code: string;
+  user_address: string;
+  user_address_detail: string;
+  user_account_type: number;
 }
 
 export interface UpdateUser {

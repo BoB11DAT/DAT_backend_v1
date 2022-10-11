@@ -39,7 +39,7 @@ export class AuthController {
   @UseGuards(AuthGuard("local"))
   async login(@Req() req, @Res() res) {
     const { user } = req;
-    const refreshToken = await this.authService.getRefreshToken(user.id);
+    const refreshToken = await this.authService.getRefreshToken(user.user_id);
     res.cookie("refreshToken", refreshToken, {
       domain: this.config.get("SERVICE_DOMAIN"),
       httpOnly: this.config.get("NODE_ENV") === "production",

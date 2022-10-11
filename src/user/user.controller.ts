@@ -39,7 +39,7 @@ export class UserController {
   @HttpCode(200)
   @UseGuards(AdminGuard)
   async fetchUser(@Body() body): Promise<UserEntity> {
-    return this.userService.fetchUser(body.id);
+    return this.userService.fetchUser(body.user_id);
   }
 
   @Patch()

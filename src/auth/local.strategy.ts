@@ -8,8 +8,8 @@ import { UserEntity } from "src/user/user.entity";
 export class LocalStrategy extends PassportStrategy(Strategy, "local") {
   constructor(private authService: AuthService) {
     super({
-      usernameField: "id",
-      passwordField: "pw",
+      usernameField: "user_id",
+      passwordField: "user_pw",
     });
   }
 

@@ -11,11 +11,11 @@ export class ApplyingEntity {
   @PrimaryGeneratedColumn("increment")
   applying_id: number;
 
-  @Column({ nullable: false })
+  @Column({ length: 36, nullable: false })
   user_uuid: string;
 
-  @Column({ nullable: false })
-  receipt_registration_number: number;
+  @Column({ length: 40, nullable: false })
+  receipt_registration_number: string;
 
   @Column({ nullable: false })
   judge_id: number;
@@ -27,8 +27,8 @@ export class ApplyingEntity {
   applying_answer: string;
 
   @CreateDateColumn()
-  applying_write_date: Date;
+  applying_created_date: Date;
 
   @UpdateDateColumn()
-  applying_update_date: Date;
+  applying_updated_date: Date;
 }

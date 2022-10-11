@@ -28,20 +28,20 @@ export class UserService {
     return await this.userRepository.find();
   }
 
-  async fetchUser(id: string): Promise<UserEntity> {
-    return await this.userRepository.findOne({ where: { id } });
+  async fetchUser(user_id: string): Promise<UserEntity> {
+    return await this.userRepository.findOne({ where: { user_id } });
   }
 
-  async getUserByUUID(uuid: string): Promise<UserEntity> {
-    return this.userRepository.findOne({ where: { uuid } });
+  async getUserByUUID(user_uuid: string): Promise<UserEntity> {
+    return this.userRepository.findOne({ where: { user_uuid } });
   }
 
-  async updateUser(uuid: string, user: UpdateUser): Promise<any> {
+  async updateUser(user_uuid: string, user: UpdateUser): Promise<any> {
     const userUpdate = this.userRepository.create({
-      uuid,
+      user_uuid,
       ...user,
     });
     await this.userRepository.save(userUpdate);
-    return this.getUserByUUID(uuid);
+    return this.getUserByUUID(user_uuid);
   }
 }

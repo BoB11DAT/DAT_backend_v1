@@ -23,52 +23,52 @@ export class AuthService {
 
   async createUser(userData: CreateUser): Promise<UserEntity> {
     if (
-      (await this.getUserByUUID(userData.id)) ||
-      (await this.getUserByEmail(userData.email))
+      (await this.getUserByUUID(userData.user_id)) ||
+      (await this.getUserByEmail(userData.user_email))
     ) {
       throw new HttpException("User or Email already exists", 400);
     }
     const newUser = await this.userRepository.create(userData);
     await this.userRepository.save(newUser);
-    return this.getUserByUUID(userData.id);
+    return this.getUserByUUID(userData.user_id);
   }
 
   async validateUser(id: string, pw: string): Promise<UserEntity> {
     const uuid = await this.getUUIDbyId(id);
     const user = await this.getUserPwByUUID(uuid);
-    if (user && (await bcrypt.compare(pw, user.pw))) {
+    if (user && (await bcrypt.compare(pw, user.user_pw))) {
       return user;
     }
     return null;
   }
 
-  async getUUIDbyId(id: string): Promise<string> {
+  async getUUIDbyId(user_id: string): Promise<string> {
     const user = await this.userRepository.findOne({
-      where: { id },
-      select: ["uuid"],
+      where: { user_id },
+      select: ["user_uuid"],
     });
-    return user.uuid;
+    return user.user_uuid;
   }
 
-  async getUserByUUID(uuid: string): Promise<UserEntity> {
-    return await this.userRepository.findOne({ where: { uuid } });
+  async getUserByUUID(user_uuid: string): Promise<UserEntity> {
+    return await this.userRepository.findOne({ where: { user_uuid } });
   }
 
-  async getUserPwByUUID(uuid: string): Promise<UserEntity> {
+  async getUserPwByUUID(user_uuid: string): Promise<UserEntity> {
     return await this.userRepository.findOne({
-      where: { uuid },
-      select: ["id", "pw"],
+      where: { user_uuid },
+      select: ["user_id", "user_pw"],
     });
   }
 
-  async getUserByEmail(email: string): Promise<UserEntity> {
-    return await this.userRepository.findOne({ where: { email } });
+  async getUserByEmail(user_email: string): Promise<UserEntity> {
+    return await this.userRepository.findOne({ where: { user_email } });
   }
 
-  async getUserRefreshTokenByUUID(uuid: string): Promise<UserEntity> {
+  async getUserRefreshTokenByUUID(user_uuid: string): Promise<UserEntity> {
     return await this.userRepository.findOne({
-      where: { uuid },
-      select: ["refreshToken"],
+      where: { user_uuid },
+      select: ["user_refresh_token"],
     });
   }
 
@@ -80,10 +80,10 @@ export class AuthService {
   }
 
   async getRefreshToken(id: string): Promise<string> {
-    const uuid = await this.getUUIDbyId(id);
-    const refreshToken = this.getToken(uuid, "REFRESH");
-    await this.userRepository.update({ uuid }, { refreshToken });
-    return refreshToken;
+    const user_uuid = await this.getUUIDbyId(id);
+    const user_refresh_token = this.getToken(user_uuid, "REFRESH");
+    await this.userRepository.update({ user_uuid }, { user_refresh_token });
+    return user_refresh_token;
   }
 
   getAccessToken(refreshToken: string): object {
@@ -97,15 +97,18 @@ export class AuthService {
     refreshToken: string,
   ): Promise<boolean> {
     const user = await this.getUserRefreshTokenByUUID(uuid);
-    if (user?.refreshToken === refreshToken) {
+    if (user?.user_refresh_token === refreshToken) {
       return true;
     }
     return false;
   }
 
   async deleteRefreshToken(refreshToken: string): Promise<object> {
-    const uuid = this.getUUIDFromToken(refreshToken, "REFRESH");
-    await this.userRepository.update({ uuid }, { refreshToken: null as any });
+    const user_uuid = this.getUUIDFromToken(refreshToken, "REFRESH");
+    await this.userRepository.update(
+      { user_uuid },
+      { user_refresh_token: null as any },
+    );
     return {
       domain: this.config.get("SERVICE_DOMAIN"),
       path: "/",
@@ -133,7 +136,7 @@ export class AuthService {
   async validPassword(accessToken: string, pw: string): Promise<boolean> {
     const id = this.getUUIDFromToken(accessToken, "ACCESS");
     const user = await this.getUserPwByUUID(id);
-    if (user && (await bcrypt.compare(pw, user.pw))) {
+    if (user && (await bcrypt.compare(pw, user.user_pw))) {
       return true;
     }
     return false;
@@ -142,7 +145,7 @@ export class AuthService {
   async checkAdmin(accessToken: string): Promise<boolean> {
     const uuid = this.getUUIDFromToken(accessToken, "ACCESS");
     const user = await this.getUserByUUID(uuid);
-    if (user && user.role === 1) {
+    if (user && user.user_role === 1) {
       return true;
     }
     return false;

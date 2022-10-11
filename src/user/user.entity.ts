@@ -14,75 +14,75 @@ import {
 @Entity("users")
 export class UserEntity {
   @PrimaryGeneratedColumn("uuid")
-  uuid: string;
+  user_uuid: string;
 
   @Column({ length: 20, nullable: false, unique: true })
-  id: string;
+  user_id: string;
 
-  @Column({ nullable: false, unique: true })
+  @Column({ length: 254, nullable: false, unique: true })
   @IsEmail()
-  email: string;
+  user_email: string;
 
   @Column({ length: 20, nullable: false, unique: true })
-  username: string;
+  user_name: string;
 
-  @Column({ nullable: false, select: false })
-  pw: string;
+  @Column({ length: 200, nullable: false, select: false })
+  user_pw: string;
 
   @Column({ type: "int", nullable: false })
-  gender: number;
+  user_gender: number;
 
   @Column({ nullable: false })
-  birth: Date;
+  user_birth: Date;
 
-  @Column({ nullable: false, unique: true })
-  tell: string;
+  @Column({ length: 20, nullable: false, unique: true })
+  user_tell: string;
 
-  @Column({ nullable: false })
-  belong: string;
+  @Column({ length: 50, nullable: false })
+  user_belong: string;
 
-  @Column({ nullable: false })
-  duty: string;
+  @Column({ length: 30, nullable: false })
+  user_duty: string;
 
-  @Column({ nullable: false })
-  zip_code: string;
+  @Column({ length: 10, nullable: false })
+  user_zip_code: string;
 
-  @Column({ nullable: false })
-  address: string;
+  @Column({ length: 254, nullable: false })
+  user_address: string;
 
-  @Column({ nullable: false })
-  address_detail: string;
+  @Column({ length: 100, nullable: false })
+  user_address_detail: string;
 
   @Column({ type: "int", default: 0, nullable: false })
-  accountType: number;
+  user_account_type: number;
 
   @Column({ type: "int", default: 0, nullable: false, insert: false })
-  role: number;
+  user_role: number;
 
   @Column({ length: 200, nullable: true, select: false })
-  refreshToken: string;
+  user_refresh_token: string;
 
   @CreateDateColumn({ insert: false, select: false })
-  createdDate: Date;
+  user_created_date: Date;
 
   @UpdateDateColumn({ insert: false, select: false })
-  updatedDate: Date;
+  user_updated_date: Date;
 
   @DeleteDateColumn({ insert: false, select: false })
-  deleted_at: Date;
+  user_deleted_at: Date;
 
   @BeforeInsert()
   @BeforeUpdate()
   async savePw(): Promise<void> {
-    if (this.pw) {
-      this.pw = await bcrypt.hash(this.pw, 10);
+    if (this.user_pw) {
+      this.user_pw = await bcrypt.hash(this.user_pw, 10);
     }
   }
 
   @BeforeInsert()
   nullUUID(): void {
-    if (this.uuid) {
-      delete this.uuid;
+    if (this.user_uuid) {
+      delete this.user_uuid;
     }
   }
 }

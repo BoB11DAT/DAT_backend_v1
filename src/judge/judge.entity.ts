@@ -21,8 +21,8 @@ export class JudgeEntity {
   judge_answer: string;
 
   @CreateDateColumn()
-  judge_create_date: Date;
+  judge_created_date: Date;
 
   @UpdateDateColumn()
-  judge_update_date: Date;
+  judge_updated_date: Date;
 }

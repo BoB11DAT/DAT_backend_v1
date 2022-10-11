@@ -12,7 +12,7 @@ export class ReceiptEntity {
   @PrimaryGeneratedColumn("increment")
   receipt_id: number;
 
-  @Column({ nullable: false, unique: true })
+  @Column({ length: 30, nullable: false, unique: true })
   receipt_round: string;
 
   @Column({ nullable: false })
@@ -22,13 +22,13 @@ export class ReceiptEntity {
   receipt_end: Date;
 
   @Column({ nullable: false })
-  receipt_type: string;
+  receipt_type: number;
 
   @CreateDateColumn()
-  receipt_create_date: Date;
+  receipt_created_date: Date;
 
   @UpdateDateColumn()
-  receipt_update_date: Date;
+  receipt_updated_date: Date;
 }
 
 @Entity("receipt_registrations")
@@ -36,13 +36,13 @@ export class ReceiptRegistrationEntity {
   @PrimaryGeneratedColumn("increment")
   receipt_registration_id: number;
 
-  @Column({ nullable: false })
+  @Column({ length: 36, nullable: false })
   user_uuid: string;
 
   @Column({ nullable: false })
   receipt_id: number;
 
-  @Column({ nullable: false })
+  @Column({ length: 40, nullable: false })
   receipt_registration_number: string;
 
   @CreateDateColumn()
