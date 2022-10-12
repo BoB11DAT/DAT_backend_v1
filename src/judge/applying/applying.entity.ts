@@ -26,9 +26,9 @@ export class ApplyingEntity {
   @Column({ nullable: false })
   applying_answer: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ select: false })
   applying_created_date: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ select: false })
   applying_updated_date: Date;
 }

@@ -20,9 +20,9 @@ export class JudgeEntity {
   @Column({ nullable: false })
   judge_answer: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ select: false })
   judge_created_date: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ select: false })
   judge_updated_date: Date;
 }

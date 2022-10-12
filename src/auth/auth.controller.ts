@@ -44,9 +44,9 @@ export class AuthController {
       domain: this.config.get("SERVICE_DOMAIN"),
       httpOnly: this.config.get("NODE_ENV") === "production",
       secure: this.config.get("NODE_ENV") === "production",
-      maxAge: 2592000000,
+      maxAge: 60 * 60 * 24 * 7,
     });
-    return res.redirect(this.config.get("CLIENT_URL"));
+    return res.redirect(this.config.get("FRONTEND_URL"));
   }
 
   @Get("google")
@@ -82,7 +82,7 @@ export class AuthController {
   async validPassword(@Req() req) {
     return this.authService.validPassword(
       req.headers.authorization.split(" ")[1],
-      req.body.pw,
+      req.body.user_pw,
     );
   }
 }

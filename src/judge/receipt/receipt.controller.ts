@@ -35,6 +35,16 @@ export class ReceiptController {
     return this.receiptService.createReceipt(receiptData);
   }
 
+  @Get("registration")
+  @UseGuards(AccessGuard)
+  async getReceiptRegistration(
+    @Req() req,
+  ): Promise<ReceiptRegistrationEntity[]> {
+    return this.receiptService.getReceiptRegistration(
+      this.receiptService.getUUIDFromReq(req),
+    );
+  }
+
   @Post("registration")
   @UseGuards(AccessGuard)
   async createReceiptRegistration(
@@ -44,6 +54,19 @@ export class ReceiptController {
     return this.receiptService.createReceiptRegistration(
       this.receiptService.getUUIDFromReq(req),
       receiptRegistrationData.receipt_round,
+    );
+  }
+
+  @Post("applying")
+  @HttpCode(200)
+  @UseGuards(AccessGuard)
+  async createReceiptApplying(
+    @Req() req,
+    @Body() receiptRestrationData: ReceiptRegistrationEntity,
+  ) {
+    return this.receiptService.receiptApplying(
+      this.receiptService.getUUIDFromReq(req),
+      receiptRestrationData.receipt_registration_number,
     );
   }
 }

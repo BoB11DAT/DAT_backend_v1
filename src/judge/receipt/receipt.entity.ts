@@ -4,7 +4,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  AfterInsert,
+  BeforeInsert,
 } from "typeorm";
 
 @Entity("receipts")
@@ -24,10 +24,10 @@ export class ReceiptEntity {
   @Column({ nullable: false })
   receipt_type: number;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ select: false })
   receipt_created_date: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ select: false })
   receipt_updated_date: Date;
 }
 
@@ -36,26 +36,24 @@ export class ReceiptRegistrationEntity {
   @PrimaryGeneratedColumn("increment")
   receipt_registration_id: number;
 
-  @Column({ length: 36, nullable: false })
+  @Column({ length: 36, nullable: false, select: false })
   user_uuid: string;
 
   @Column({ nullable: false })
   receipt_id: number;
 
-  @Column({ length: 40, nullable: false })
+  @Column({ length: 40, nullable: false, unique: true })
   receipt_registration_number: string;
+
+  @Column({ nullable: true })
+  receipt_applying_start_date: Date;
+
+  @Column({ nullable: true })
+  receipt_applying_end_date: Date;
 
   @CreateDateColumn()
   receipt_registration_date: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ select: false })
   receipt_registration_update_date: Date;
-
-  @AfterInsert()
-  async createRegistrationNumber() {
-    this.receipt_registration_number =
-      this.receipt_registration_number.replace("P", "D") +
-      "-" +
-      this.receipt_registration_id.toString().padStart(4, "0");
-  }
 }

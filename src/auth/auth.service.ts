@@ -34,7 +34,7 @@ export class AuthService {
   }
 
   async validateUser(id: string, pw: string): Promise<UserEntity> {
-    const uuid = await this.getUUIDbyId(id);
+    const uuid = await this.getUUIDById(id);
     const user = await this.getUserPwByUUID(uuid);
     if (user && (await bcrypt.compare(pw, user.user_pw))) {
       return user;
@@ -42,7 +42,7 @@ export class AuthService {
     return null;
   }
 
-  async getUUIDbyId(user_id: string): Promise<string> {
+  async getUUIDById(user_id: string): Promise<string> {
     const user = await this.userRepository.findOne({
       where: { user_id },
       select: ["user_uuid"],
@@ -80,7 +80,7 @@ export class AuthService {
   }
 
   async getRefreshToken(id: string): Promise<string> {
-    const user_uuid = await this.getUUIDbyId(id);
+    const user_uuid = await this.getUUIDById(id);
     const user_refresh_token = this.getToken(user_uuid, "REFRESH");
     await this.userRepository.update({ user_uuid }, { user_refresh_token });
     return user_refresh_token;
@@ -117,9 +117,9 @@ export class AuthService {
     };
   }
 
-  getToken(uuid: string, kind: string): string {
+  getToken(user_uuid: string, kind: string): string {
     return this.jwtService.sign(
-      { uuid },
+      { user_uuid },
       {
         secret: this.config.get(`${kind}_TOKEN_SECRET`),
         expiresIn: this.config.get(`${kind}_TOKEN_EXPIRES_IN`),
@@ -130,12 +130,12 @@ export class AuthService {
   getUUIDFromToken(token: string, kind: string): string {
     return this.jwtService.verify(token, {
       secret: this.config.get(`${kind}_TOKEN_SECRET`),
-    }).uuid;
+    }).user_uuid;
   }
 
   async validPassword(accessToken: string, pw: string): Promise<boolean> {
-    const id = this.getUUIDFromToken(accessToken, "ACCESS");
-    const user = await this.getUserPwByUUID(id);
+    const uuid = this.getUUIDFromToken(accessToken, "ACCESS");
+    const user = await this.getUserPwByUUID(uuid);
     if (user && (await bcrypt.compare(pw, user.user_pw))) {
       return true;
     }

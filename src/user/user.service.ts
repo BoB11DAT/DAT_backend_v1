@@ -21,7 +21,7 @@ export class UserService {
   getUUIDFromReq(req: any): string {
     return this.jwtService.verify(req.headers.authorization.split(" ")[1], {
       secret: this.config.get("ACCESS_TOKEN_SECRET"),
-    }).uuid;
+    }).user_uuid;
   }
 
   async findAll(): Promise<UserEntity[]> {
