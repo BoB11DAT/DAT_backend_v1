@@ -9,7 +9,7 @@ import {
   HttpCode,
 } from "@nestjs/common";
 import { ApplyingService } from "./applying.service";
-import { ApplyingEntity } from "./applying.entity";
+import { ApplyingJudgeEntity, ApplyingAnswerEntity } from "./applying.entity";
 import { AccessGuard } from "src/auth/access.guard";
 import { AdminGuard } from "src/auth/admin.guard";
 
@@ -22,11 +22,16 @@ export class ApplyingController {
 
   @Get()
   @UseGuards(AccessGuard)
-  async findAll(@Req() req): Promise<ApplyingEntity[]> {
+  async findAll(@Req() req): Promise<ApplyingJudgeEntity[]> {
     return this.applyingService.findAll(
       this.applyingService.getUUIDFromReq(req),
     );
   }
 
-  
+  @Post()
+  @UseGuards(AccessGuard)
+  @HttpCode(200)
+  async applyingAnswer() {
+    return;
+  }
 }

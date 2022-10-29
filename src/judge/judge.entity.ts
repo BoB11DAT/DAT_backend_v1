@@ -18,6 +18,12 @@ export class JudgeEntity {
   judge_type: number;
 
   @Column({ nullable: false })
+  judge_category: string;
+
+  @Column({ nullable: false })
+  judge_vector: number;
+
+  @Column({ nullable: false })
   judge_answer: string;
 
   @CreateDateColumn({ select: false })

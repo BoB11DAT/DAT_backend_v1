@@ -4,7 +4,8 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  BeforeInsert,
+  AfterInsert,
+  PrimaryColumn,
 } from "typeorm";
 
 @Entity("receipts")
@@ -16,10 +17,10 @@ export class ReceiptEntity {
   receipt_round: string;
 
   @Column({ nullable: false })
-  receipt_start: Date;
+  receipt_start_date: Date;
 
   @Column({ nullable: false })
-  receipt_end: Date;
+  receipt_end_date: Date;
 
   @Column({ nullable: false })
   receipt_type: number;
@@ -33,17 +34,14 @@ export class ReceiptEntity {
 
 @Entity("receipt_registrations")
 export class ReceiptRegistrationEntity {
-  @PrimaryGeneratedColumn("increment")
-  receipt_registration_id: number;
+  @PrimaryColumn({ length: 40 })
+  receipt_registration_number: string;
 
   @Column({ length: 36, nullable: false, select: false })
   user_uuid: string;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, select: false })
   receipt_id: number;
-
-  @Column({ length: 40, nullable: false, unique: true })
-  receipt_registration_number: string;
 
   @Column({ nullable: true })
   receipt_applying_start_date: Date;
@@ -51,12 +49,25 @@ export class ReceiptRegistrationEntity {
   @Column({ nullable: true })
   receipt_applying_end_date: Date;
 
-  @Column({ nullable: false })
+  @Column({ nullable: false, default: false, select: false })
   receipt_registration_open: boolean;
+
+  @Column({ nullable: false, default: false, select: false })
+  receipt_registration_end: boolean;
 
   @CreateDateColumn({ select: false })
   receipt_registration_date: Date;
 
   @UpdateDateColumn({ select: false })
   receipt_registration_update_date: Date;
+
+  @AfterInsert()
+  delete() {
+    delete this.user_uuid;
+    delete this.receipt_id;
+    delete this.receipt_registration_open;
+    delete this.receipt_registration_end;
+    delete this.receipt_registration_date;
+    delete this.receipt_registration_update_date;
+  }
 }

@@ -9,9 +9,9 @@ import { ReceiptEntity, ReceiptRegistrationEntity } from "./receipt.entity";
 export class ReceiptService {
   constructor(
     @InjectRepository(ReceiptEntity)
-    private readonly ReceiptRepository: Repository<ReceiptEntity>,
+    private readonly receiptRepository: Repository<ReceiptEntity>,
     @InjectRepository(ReceiptRegistrationEntity)
-    private readonly ReceiptRegistrationRepository: Repository<ReceiptRegistrationEntity>,
+    private readonly receiptRegistrationRepository: Repository<ReceiptRegistrationEntity>,
     private jwtService: JwtService,
     private readonly config: ConfigService,
   ) {}
@@ -20,7 +20,7 @@ export class ReceiptService {
   }
 
   findAll(): Promise<ReceiptEntity[]> {
-    return this.ReceiptRepository.find();
+    return this.receiptRepository.find();
   }
 
   getUUIDFromReq(req: any): string {
@@ -30,14 +30,14 @@ export class ReceiptService {
   }
 
   async createReceipt(receipt: ReceiptEntity): Promise<ReceiptEntity> {
-    const receiptCreated = this.ReceiptRepository.create(receipt);
-    return await this.ReceiptRepository.save(receiptCreated);
+    const receiptCreated = this.receiptRepository.create(receipt);
+    return await this.receiptRepository.save(receiptCreated);
   }
 
   async getReceiptRegistration(
     user_uuid: string,
   ): Promise<ReceiptRegistrationEntity[]> {
-    return await this.ReceiptRegistrationRepository.find({
+    return await this.receiptRegistrationRepository.find({
       where: { user_uuid },
     });
   }
@@ -47,12 +47,12 @@ export class ReceiptService {
     receiptRegistrationRound: string,
   ): Promise<ReceiptRegistrationEntity> {
     const receiptId = (
-      await this.ReceiptRepository.findOne({
+      await this.receiptRepository.findOne({
         where: { receipt_round: receiptRegistrationRound },
       })
     ).receipt_id;
     const lastRegistrationNumber =
-      await this.ReceiptRegistrationRepository.findOne({
+      await this.receiptRegistrationRepository.findOne({
         where: { receipt_id: receiptId },
         order: { receipt_registration_number: "DESC" },
       });
@@ -60,24 +60,23 @@ export class ReceiptService {
       receiptRegistrationRound.replace("P", "D") +
       "-" +
       (lastRegistrationNumber
-        ? (lastRegistrationNumber.receipt_registration_id + 1)
+        ? (
+            parseInt(
+              lastRegistrationNumber.receipt_registration_number.substring(11),
+            ) + 1
+          )
             .toString()
             .padStart(4, "0")
         : "0001");
     const receiptRegistrationCreated =
-      this.ReceiptRegistrationRepository.create({
+      this.receiptRegistrationRepository.create({
+        receipt_registration_number,
         receipt_id: receiptId,
         user_uuid,
-        receipt_registration_number,
       });
-    const receiptRegistration = await this.ReceiptRegistrationRepository.save(
+    const receiptRegistration = await this.receiptRegistrationRepository.save(
       receiptRegistrationCreated,
     );
-    delete receiptRegistration.receipt_registration_id;
-    delete receiptRegistration.user_uuid;
-    delete receiptRegistration.receipt_registration_update_date;
-    delete receiptRegistration.receipt_applying_start_date;
-    delete receiptRegistration.receipt_applying_end_date;
     return receiptRegistration;
   }
 
@@ -86,7 +85,7 @@ export class ReceiptService {
     receipt_registration_number: string,
   ) {
     const receiptRegistration =
-      await this.ReceiptRegistrationRepository.findOne({
+      await this.receiptRegistrationRepository.findOne({
         where: {
           user_uuid,
           receipt_registration_number,
@@ -97,6 +96,8 @@ export class ReceiptService {
     receiptRegistration.receipt_applying_end_date.setDate(
       receiptRegistration.receipt_applying_end_date.getDate() + 7,
     );
-    await this.ReceiptRegistrationRepository.save(receiptRegistration);
+    await this.receiptRegistrationRepository.save(receiptRegistration);
   }
 }
+/*여기서 응시 시작할 때 문제 목록중에 카테고리별로 뽑아서 번호 부여하고 applying_judges에
+넣고 foreach돌려서 applying_answers에 applying_judge_id가 들어간 칼럼 만들어야함*/
