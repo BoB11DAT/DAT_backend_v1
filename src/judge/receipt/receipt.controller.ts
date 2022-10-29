@@ -8,7 +8,6 @@ import {
   Req,
   HttpCode,
 } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
 import { ReceiptService } from "./receipt.service";
 import { ReceiptEntity, ReceiptRegistrationEntity } from "./receipt.entity";
 import { AccessGuard } from "src/auth/access.guard";
@@ -18,7 +17,6 @@ import { AdminGuard } from "src/auth/admin.guard";
   path: "receipt",
   version: "1",
 })
-@UseGuards(AuthGuard("jwt-access-token"))
 export class ReceiptController {
   constructor(private readonly receiptService: ReceiptService) {}
 

@@ -23,14 +23,14 @@ export class AuthService {
 
   async createUser(userData: CreateUser): Promise<UserEntity> {
     if (
-      (await this.getUserByUUID(userData.user_id)) ||
+      (await this.getUserById(userData.user_id)) ||
       (await this.getUserByEmail(userData.user_email))
     ) {
       throw new HttpException("User or Email already exists", 400);
     }
     const newUser = await this.userRepository.create(userData);
     await this.userRepository.save(newUser);
-    return this.getUserByUUID(userData.user_id);
+    return this.getUserById(userData.user_id);
   }
 
   async validateUser(id: string, pw: string): Promise<UserEntity> {
@@ -48,6 +48,10 @@ export class AuthService {
       select: ["user_uuid"],
     });
     return user.user_uuid;
+  }
+
+  async getUserById(user_id: string): Promise<UserEntity> {
+    return await this.userRepository.findOne({ where: { user_id } });
   }
 
   async getUserByUUID(user_uuid: string): Promise<UserEntity> {

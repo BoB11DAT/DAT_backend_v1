@@ -81,12 +81,15 @@ export class ReceiptService {
     return receiptRegistration;
   }
 
-  async receiptApplying(user_uuid: string, receiptRegistrationNumber: string) {
+  async receiptApplying(
+    user_uuid: string,
+    receipt_registration_number: string,
+  ) {
     const receiptRegistration =
       await this.ReceiptRegistrationRepository.findOne({
         where: {
           user_uuid,
-          receipt_registration_number: receiptRegistrationNumber,
+          receipt_registration_number,
         },
       });
     receiptRegistration.receipt_applying_start_date = new Date();

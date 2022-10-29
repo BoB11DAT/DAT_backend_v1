@@ -8,7 +8,6 @@ import {
   Req,
   HttpCode,
 } from "@nestjs/common";
-import { AuthGuard } from "@nestjs/passport";
 import { UserService } from "./user.service";
 import { UserEntity } from "./user.entity";
 import { AccessGuard } from "src/auth/access.guard";
@@ -19,7 +18,6 @@ import { UpdateUser } from "./user.interface";
   path: "user",
   version: "1",
 })
-@UseGuards(AuthGuard("jwt-access-token"))
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

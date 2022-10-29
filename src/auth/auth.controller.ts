@@ -73,7 +73,7 @@ export class AuthController {
       req.cookies.refreshToken,
     );
     res.clearCookie("refreshToken", COOKIE_OPTION);
-    return res.redirect(this.config.get("CLIENT_URL"));
+    return res.redirect(this.config.get("FRONTEND_URL"));
   }
 
   @Post("valid/password")

@@ -17,8 +17,8 @@ export class ApplyingService {
     return "Hello World!";
   }
 
-  findAll(): Promise<ApplyingEntity[]> {
-    return this.ReceiptRepository.find();
+  findAll(user_uuid: string): Promise<ApplyingEntity[]> {
+    return this.ReceiptRepository.find({ where: { user_uuid } });
   }
 
   getUUIDFromReq(req: any): string {

@@ -24,6 +24,9 @@ export class ApplyingEntity {
   judge_number: number;
 
   @Column({ nullable: false })
+  applying_vector: number;
+
+  @Column({ nullable: false })
   applying_answer: string;
 
   @CreateDateColumn({ select: false })

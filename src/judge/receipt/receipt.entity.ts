@@ -51,7 +51,10 @@ export class ReceiptRegistrationEntity {
   @Column({ nullable: true })
   receipt_applying_end_date: Date;
 
-  @CreateDateColumn()
+  @Column({ nullable: false })
+  receipt_registration_open: boolean;
+
+  @CreateDateColumn({ select: false })
   receipt_registration_date: Date;
 
   @UpdateDateColumn({ select: false })
