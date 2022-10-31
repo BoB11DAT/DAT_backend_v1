@@ -54,7 +54,7 @@ export class ReceiptController {
     );
   }
 
-  @Post("applying")
+  @Post("apply")
   @HttpCode(200)
   @UseGuards(AccessGuard)
   async createReceiptApplying(

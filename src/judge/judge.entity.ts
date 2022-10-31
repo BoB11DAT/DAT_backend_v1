@@ -12,7 +12,7 @@ export class JudgeEntity {
   judge_id: number;
 
   @Column({ nullable: false })
-  judge: string;
+  judge_content: string;
 
   @Column({ nullable: false })
   judge_type: number;
@@ -21,10 +21,19 @@ export class JudgeEntity {
   judge_category: string;
 
   @Column({ nullable: false })
-  judge_vector: number;
+  judge_category_detail: string;
+
+  @Column({ nullable: false })
+  judge_difficulty: number;
+
+  @Column({ nullable: false })
+  judge_vector: string;
 
   @Column({ nullable: false })
   judge_answer: string;
+
+  @Column({ nullable: false })
+  docdoc_url: string;
 
   @CreateDateColumn({ select: false })
   judge_created_date: Date;

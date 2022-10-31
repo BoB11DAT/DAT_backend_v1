@@ -91,10 +91,10 @@ export class ReceiptService {
           receipt_registration_number,
         },
       });
-    receiptRegistration.receipt_applying_start_date = new Date();
-    receiptRegistration.receipt_applying_end_date = new Date();
-    receiptRegistration.receipt_applying_end_date.setDate(
-      receiptRegistration.receipt_applying_end_date.getDate() + 7,
+    receiptRegistration.receipt_available_start_date = new Date();
+    receiptRegistration.receipt_available_end_date = new Date();
+    receiptRegistration.receipt_available_end_date.setDate(
+      receiptRegistration.receipt_available_end_date.getDate() + 7,
     );
     await this.receiptRegistrationRepository.save(receiptRegistration);
   }

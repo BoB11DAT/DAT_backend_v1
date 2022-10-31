@@ -44,10 +44,10 @@ export class ReceiptRegistrationEntity {
   receipt_id: number;
 
   @Column({ nullable: true })
-  receipt_applying_start_date: Date;
+  receipt_available_start_date: Date;
 
   @Column({ nullable: true })
-  receipt_applying_end_date: Date;
+  receipt_available_end_date: Date;
 
   @Column({ nullable: false, default: false, select: false })
   receipt_registration_open: boolean;
