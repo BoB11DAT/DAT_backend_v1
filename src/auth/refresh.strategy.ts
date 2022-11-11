@@ -26,6 +26,6 @@ export class RefreshStrategy extends PassportStrategy(
 
   async validate(req, payload: any) {
     const refreshToken = req.cookies?.refreshToken;
-    return this.authService.refreshTokenMatch(payload.uuid, refreshToken);
+    return this.authService.refreshTokenMatch(payload.user_uuid, refreshToken);
   }
 }

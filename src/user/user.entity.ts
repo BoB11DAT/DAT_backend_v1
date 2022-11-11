@@ -23,7 +23,7 @@ export class UserEntity {
   @IsEmail()
   user_email: string;
 
-  @Column({ length: 20, nullable: false, unique: true })
+  @Column({ length: 20, nullable: false })
   user_name: string;
 
   @Column({ length: 200, nullable: false, select: false })
@@ -53,10 +53,10 @@ export class UserEntity {
   @Column({ length: 100, nullable: false })
   user_address_detail: string;
 
-  @Column({ type: "int", default: 0, nullable: false })
+  @Column({ default: 0, nullable: false })
   user_account_type: number;
 
-  @Column({ type: "int", default: 0, nullable: false, insert: false })
+  @Column({ default: 0, nullable: false, insert: false, update: false })
   user_role: number;
 
   @Column({ length: 200, nullable: true, select: false })

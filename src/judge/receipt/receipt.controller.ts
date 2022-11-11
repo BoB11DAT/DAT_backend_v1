@@ -51,7 +51,7 @@ export class ReceiptController {
     return this.receiptService.createReceiptRegistration(
       this.receiptService.getUUIDFromReq(req),
       receiptRegistrationData.receipt_round,
-    );
+    ); //entity에서 interface로 바꾸기
   }
 
   @Post("apply")
@@ -59,11 +59,11 @@ export class ReceiptController {
   @UseGuards(AccessGuard)
   async createReceiptApplying(
     @Req() req,
-    @Body() receiptRestrationData: ReceiptRegistrationEntity,
+    @Body() receiptRegistrationData: ReceiptRegistrationEntity,
   ) {
     return this.receiptService.receiptApplying(
       this.receiptService.getUUIDFromReq(req),
-      receiptRestrationData.receipt_registration_number,
-    );
+      receiptRegistrationData.receipt_registration_number,
+    ); //entity에서 interface로 바꾸기
   }
 }

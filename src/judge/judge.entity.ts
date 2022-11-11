@@ -18,10 +18,7 @@ export class JudgeEntity {
   judge_type: number;
 
   @Column({ nullable: false })
-  judge_category: string;
-
-  @Column({ nullable: false })
-  judge_category_detail: string;
+  judge_category: number;
 
   @Column({ nullable: false })
   judge_difficulty: number;
