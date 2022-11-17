@@ -16,7 +16,7 @@ export interface User {
   user_uuid: string;
   user_id: string;
   user_email: string;
-  user_username: string;
+  user_name: string;
   user_pw: string;
   user_gender: number;
   user_birth: number;
@@ -28,9 +28,6 @@ export interface User {
   user_address_detail: string;
   user_account_type: number;
   user_role: number;
-  user_refresh_token: string;
-  user_created_date: Date;
-  user_updated_Date: Date;
 }
 
 export interface CreateUser {

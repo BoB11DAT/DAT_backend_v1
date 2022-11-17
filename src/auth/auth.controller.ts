@@ -37,16 +37,23 @@ export class AuthController {
   @Post("login")
   @HttpCode(200)
   @UseGuards(AuthGuard("local"))
-  async login(@Req() req, @Res() res) {
+  // async login(@Req() req, @Res() res) {
+  //   console.log(req.body);
+  //   const { user } = req;
+  //   const refreshToken = await this.authService.getRefreshToken(user.user_id);
+  //   res.cookie("refreshToken", refreshToken, {
+  //     domain: this.config.get("SERVICE_DOMAIN"),
+  //     httpOnly: this.config.get("NODE_ENV") === "production",
+  //     secure: this.config.get("NODE_ENV") === "production",
+  //     maxAge: 60 * 60 * 24 * 7,
+  //   });
+  //   return res.redirect(this.config.get("FRONTEND_URL"));
+  // }
+  // It's because of nuxt3's useFetch() function. It doesn't work with redirect.
+  async login(@Req() req) {
     const { user } = req;
     const refreshToken = await this.authService.getRefreshToken(user.user_id);
-    res.cookie("refreshToken", refreshToken, {
-      domain: this.config.get("SERVICE_DOMAIN"),
-      httpOnly: this.config.get("NODE_ENV") === "production",
-      secure: this.config.get("NODE_ENV") === "production",
-      maxAge: 60 * 60 * 24 * 7,
-    });
-    return res.redirect(this.config.get("FRONTEND_URL"));
+    return { refreshToken };
   }
 
   @Get("google")

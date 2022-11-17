@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
+import { Request } from "express";
 import { ApplyingJudgeEntity, ApplyingAnswerEntity } from "./applying.entity";
 
 @Injectable()
@@ -28,10 +29,16 @@ export class ApplyingService {
     return this.applyingAnswerRepository.find({ where: { user_uuid } });
   }
 
-  getUUIDFromReq(req: any): string {
+  getUUIDFromReq(req: Request): string {
     return this.jwtService.verify(req.headers.authorization.split(" ")[1], {
       secret: this.config.get("ACCESS_TOKEN_SECRET"),
     }).user_uuid;
+  }
+
+  getReceiptNumberFromReq(req: Request): string {
+    return this.jwtService.verify(req.cookies.receiptRegistrationNumber, {
+      secret: this.config.get("RECEIPT_NUMBER_SECRET"),
+    }).receipt_registration_number;
   }
 }
 /* 구현할 때 우선 시험 응시 시작하면 문제 랜덤으로 뽑아오고 뽑아온 만큼 applying_answers에

@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
 } from "typeorm";
 
 @Entity("applying_judges")
@@ -21,13 +22,16 @@ export class ApplyingJudgeEntity {
   judge_id: number;
 
   @Column({ nullable: false })
-  applying_judge_number: number;
+  applying_judge_number: number; //할당된 문제 번호
 
   @CreateDateColumn({ select: false })
   applying_judge_created_date: Date;
 
   @UpdateDateColumn({ select: false })
   applying_judge_updated_date: Date;
+
+  @DeleteDateColumn({ select: false })
+  applying_judge_deleted_date: Date;
 }
 
 @Entity("applying_answers")
@@ -55,4 +59,7 @@ export class ApplyingAnswerEntity {
 
   @UpdateDateColumn({ select: false })
   applying_answer_updated_date: Date;
+
+  @DeleteDateColumn({ select: false })
+  applying_answer_deleted_date: Date;
 }

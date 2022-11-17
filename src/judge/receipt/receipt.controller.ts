@@ -11,6 +11,10 @@ import { ReceiptService } from "./receipt.service";
 import { ReceiptEntity, ReceiptRegistrationEntity } from "./receipt.entity";
 import { AccessGuard } from "src/auth/access.guard";
 import { AdminGuard } from "src/auth/admin.guard";
+import {
+  GetReceiptRegistration,
+  receiptRegistrationNumber,
+} from "./receipt.interface";
 
 @Controller({
   path: "receipt",
@@ -20,6 +24,7 @@ export class ReceiptController {
   constructor(private readonly receiptService: ReceiptService) {}
 
   @Get()
+  @UseGuards(AccessGuard)
   async findAll(): Promise<ReceiptEntity[]> {
     return this.receiptService.findAll();
   }
@@ -34,9 +39,7 @@ export class ReceiptController {
 
   @Get("registration")
   @UseGuards(AccessGuard)
-  async getReceiptRegistration(
-    @Req() req,
-  ): Promise<ReceiptRegistrationEntity[]> {
+  async getReceiptRegistration(@Req() req): Promise<GetReceiptRegistration[]> {
     return this.receiptService.getReceiptRegistration(
       this.receiptService.getUUIDFromReq(req),
     );
@@ -51,7 +54,7 @@ export class ReceiptController {
     return this.receiptService.createReceiptRegistration(
       this.receiptService.getUUIDFromReq(req),
       receiptRegistrationData.receipt_round,
-    ); //entity에서 interface로 바꾸기
+    ); //entity에서 interface로 바꾸기, round 대신 id로 바꾸기
   }
 
   @Post("apply")
@@ -59,11 +62,11 @@ export class ReceiptController {
   @UseGuards(AccessGuard)
   async createReceiptApplying(
     @Req() req,
-    @Body() receiptRegistrationData: ReceiptRegistrationEntity,
+    @Body() receiptRegistrationData: receiptRegistrationNumber,
   ) {
     return this.receiptService.receiptApplying(
       this.receiptService.getUUIDFromReq(req),
       receiptRegistrationData.receipt_registration_number,
-    ); //entity에서 interface로 바꾸기
+    );
   }
 }

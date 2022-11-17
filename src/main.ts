@@ -27,11 +27,12 @@ async function bootstrap() {
   });
   app.use(cookieParser());
   app.enableCors({
-    origin: config.get<string>("CORS_ORIGIN"),
+    origin: config.get<string>("FRONTEND_URL"),
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     preflightContinue: false,
     optionsSuccessStatus: 204,
+    allowedHeaders: "Content-Type, Authorization, Accept",
   });
 
   if (config.get<string>("NODE_ENV") === "development") {

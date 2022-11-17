@@ -14,8 +14,8 @@ export class UserService {
     private jwtService: JwtService,
     private readonly config: ConfigService,
   ) {}
-  getHello(): string {
-    return "Hello World!";
+  async getMyData(user_uuid: string): Promise<UserEntity> {
+    return await this.userRepository.findOne({ where: { user_uuid } });
   }
 
   getUUIDFromReq(req: any): string {

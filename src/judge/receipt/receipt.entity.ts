@@ -6,6 +6,8 @@ import {
   UpdateDateColumn,
   AfterInsert,
   PrimaryColumn,
+  DeleteDateColumn,
+  BeforeInsert,
 } from "typeorm";
 
 @Entity("receipts")
@@ -30,6 +32,9 @@ export class ReceiptEntity {
 
   @UpdateDateColumn({ select: false })
   receipt_updated_date: Date;
+
+  @DeleteDateColumn({ select: false })
+  receipt_deleted_date: Date;
 }
 
 @Entity("receipt_registrations")
@@ -43,23 +48,29 @@ export class ReceiptRegistrationEntity {
   @Column({ nullable: false, select: false })
   receipt_id: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   receipt_available_start_date: Date;
 
-  @Column({ nullable: true })
+  @Column({ nullable: false })
   receipt_available_end_date: Date;
 
-  @Column({ nullable: false, default: false, select: false })
+  @Column({ nullable: false, default: false })
   receipt_registration_open: boolean;
 
-  @Column({ nullable: false, default: false, select: false })
+  @Column({ nullable: false, default: false })
   receipt_registration_end: boolean;
+
+  @Column({ length: 200, nullable: true, select: false })
+  receipt_number_cookie: string;
 
   @CreateDateColumn({ select: false })
   receipt_registration_date: Date;
 
   @UpdateDateColumn({ select: false })
   receipt_registration_update_date: Date;
+
+  @DeleteDateColumn({ select: false })
+  receipt_registration_deleted_date: Date;
 
   @AfterInsert()
   delete() {

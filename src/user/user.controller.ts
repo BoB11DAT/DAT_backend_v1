@@ -23,8 +23,8 @@ export class UserController {
 
   @Get()
   @UseGuards(AccessGuard)
-  getHello(): string {
-    return this.userService.getHello();
+  getMyData(@Req() req): Promise<UserEntity> {
+    return this.userService.getMyData(this.userService.getUUIDFromReq(req));
   }
 
   @Get("findall")

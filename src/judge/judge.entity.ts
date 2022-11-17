@@ -4,6 +4,7 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  DeleteDateColumn,
 } from "typeorm";
 
 @Entity("judges")
@@ -24,7 +25,7 @@ export class JudgeEntity {
   judge_difficulty: number;
 
   @Column({ nullable: false })
-  judge_vector: string;
+  judge_vector: number;
 
   @Column({ nullable: false })
   judge_answer: string;
@@ -37,4 +38,7 @@ export class JudgeEntity {
 
   @UpdateDateColumn({ select: false })
   judge_updated_date: Date;
+
+  @DeleteDateColumn({ select: false })
+  judge_deleted_date: Date;
 }
