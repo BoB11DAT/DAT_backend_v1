@@ -1,10 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, UpdateResult } from "typeorm";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { Request } from "express";
 import { ApplyingJudgeEntity, ApplyingAnswerEntity } from "./applying.entity";
+import { JudgeEntity } from "../judge.entity";
+import { Judge } from "./applying.interface";
+import { ReceiptRegistrationEntity } from "../receipt/receipt.entity";
 
 @Injectable()
 export class ApplyingService {
@@ -13,6 +16,10 @@ export class ApplyingService {
     private readonly applyingJudgeRepository: Repository<ApplyingJudgeEntity>,
     @InjectRepository(ApplyingAnswerEntity)
     private readonly applyingAnswerRepository: Repository<ApplyingAnswerEntity>,
+    @InjectRepository(JudgeEntity)
+    private readonly judgeRepository: Repository<JudgeEntity>,
+    @InjectRepository(ReceiptRegistrationEntity)
+    private readonly receiptRegistrationRepository: Repository<ReceiptRegistrationEntity>,
     private jwtService: JwtService,
     private readonly config: ConfigService,
   ) {}
@@ -20,13 +27,36 @@ export class ApplyingService {
     return "Hello World!";
   }
 
-  findAll(user_uuid: string): Promise<ApplyingJudgeEntity[]> {
-    return this.applyingJudgeRepository.find({ where: { user_uuid } });
+  async findAll(
+    user_uuid: string,
+    receipt_registration_number: string,
+  ): Promise<Judge[]> {
+    const applyingJudges = await this.applyingJudgeRepository.find({
+      where: { user_uuid, receipt_registration_number },
+      order: { applying_judge_number: "ASC" },
+    });
+    const judges = applyingJudges.map(async (applyingJudge) => {
+      const judgeOrigin = await this.judgeRepository.findOne({
+        where: { judge_id: applyingJudge.judge_id },
+        select: ["judge_category", "judge_content"],
+      });
+      return {
+        ...applyingJudge,
+        judge_category: judgeOrigin.judge_category,
+        judge_content: judgeOrigin.judge_content,
+      };
+    });
+    return Promise.all(judges);
   } //이거 카테고리별로 문제 번호 나눠서 반환하고 클라이언트에서 카테고리별로 문제 번호 나눠서 표시해야함
   //그냥 foreach로 카테고리랑 문제도 같이 넣어서 반환. 아니지 join으로 judge_id기준으로 찾아서 같이 반환하면 됨
 
-  findAllAnswer(user_uuid: string): Promise<ApplyingAnswerEntity[]> {
-    return this.applyingAnswerRepository.find({ where: { user_uuid } });
+  async findAllAnswer(
+    user_uuid: string,
+    receipt_registration_number: string,
+  ): Promise<ApplyingAnswerEntity[]> {
+    return await this.applyingAnswerRepository.find({
+      where: { user_uuid, receipt_registration_number },
+    });
   }
 
   getUUIDFromReq(req: Request): string {
@@ -40,6 +70,68 @@ export class ApplyingService {
       secret: this.config.get("RECEIPT_NUMBER_SECRET"),
     }).receipt_registration_number;
   }
+
+  async applyingAnswer(
+    user_uuid: string,
+    receipt_registration_number: string,
+    applying_judge_number: number,
+    applying_answer: string,
+  ): Promise<UpdateResult> {
+    return await this.applyingAnswerRepository.update(
+      {
+        user_uuid,
+        receipt_registration_number,
+        applying_judge_number,
+      },
+      {
+        applying_answer,
+      },
+    );
+  }
+
+  async applyingVector(
+    user_uuid: string,
+    receipt_registration_number: string,
+    applying_judge_number: number,
+    applying_answer_vector: number,
+  ): Promise<UpdateResult> {
+    return await this.applyingAnswerRepository.update(
+      {
+        user_uuid,
+        receipt_registration_number,
+        applying_judge_number,
+      },
+      {
+        applying_answer_vector,
+      },
+    );
+  }
+
+  async applyingEnd(
+    user_uuid: string,
+    receipt_registration_number: string,
+  ): Promise<UpdateResult> {
+    if (
+      !(
+        await this.receiptRegistrationRepository.findOne({
+          where: { user_uuid, receipt_registration_number },
+          select: ["receipt_registration_end"],
+        })
+      ).receipt_registration_end
+    ) {
+      return await this.receiptRegistrationRepository.update(
+        {
+          user_uuid,
+          receipt_registration_number,
+        },
+        {
+          receipt_registration_end: true,
+        },
+      );
+    } else {
+      return null;
+    }
+  }// 끝나면 db에 저장된 수험번호 쿠키 지우고 정답 db에 수험번호와 유저 uuid랑 applying_judge_id, applying_answer_id랑 정답 여부 저장
 }
 /* 구현할 때 우선 시험 응시 시작하면 문제 랜덤으로 뽑아오고 뽑아온 만큼 applying_answers에
 칼럼을 만들어서 applying_judge의 id를 등록해주고 문제 전체를 불러온다.

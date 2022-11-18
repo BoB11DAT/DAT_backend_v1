@@ -12,7 +12,7 @@ export class ApplyingStrategy extends PassportStrategy(
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req) => {
-          return req?.cookies?.refreshToken;
+          return req?.cookies?.receiptRegistrationNumber;
         },
       ]),
       secretOrKey: config.get("RECEIPT_NUMBER_SECRET"),

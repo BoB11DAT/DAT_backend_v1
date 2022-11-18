@@ -45,6 +45,16 @@ export class ReceiptController {
     );
   }
 
+  @Get("registration/except")
+  @UseGuards(AccessGuard)
+  async getReceiptRegistrationExceptOpened(
+    @Req() req,
+  ): Promise<GetReceiptRegistration[]> {
+    return this.receiptService.getReceiptRegistrationExceptOpened(
+      this.receiptService.getUUIDFromReq(req),
+    );
+  }
+
   @Post("registration")
   @UseGuards(AccessGuard)
   async createReceiptRegistration(
@@ -65,6 +75,19 @@ export class ReceiptController {
     @Body() receiptRegistrationData: receiptRegistrationNumber,
   ) {
     return this.receiptService.receiptApplying(
+      this.receiptService.getUUIDFromReq(req),
+      receiptRegistrationData.receipt_registration_number,
+    );
+  }
+
+  @Post("apply/continue")
+  @UseGuards(AccessGuard)
+  @HttpCode(200)
+  async continueApplying(
+    @Req() req,
+    @Body() receiptRegistrationData: receiptRegistrationNumber,
+  ) {
+    return this.receiptService.continueApplying(
       this.receiptService.getUUIDFromReq(req),
       receiptRegistrationData.receipt_registration_number,
     );

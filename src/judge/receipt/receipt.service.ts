@@ -6,7 +6,10 @@ import { ConfigService } from "@nestjs/config";
 import { Request } from "express";
 import { ReceiptEntity, ReceiptRegistrationEntity } from "./receipt.entity";
 import { GetReceiptRegistration } from "./receipt.interface";
-import { ApplyingJudgeEntity } from "../applying/applying.entity";
+import {
+  ApplyingJudgeEntity,
+  ApplyingAnswerEntity,
+} from "../applying/applying.entity";
 import { JudgeEntity } from "../judge.entity";
 
 @Injectable()
@@ -20,6 +23,8 @@ export class ReceiptService {
     private readonly applyingJudgeRepository: Repository<ApplyingJudgeEntity>,
     @InjectRepository(JudgeEntity)
     private readonly judgeRepository: Repository<JudgeEntity>,
+    @InjectRepository(ApplyingAnswerEntity)
+    private readonly applyingAnswerRepository: Repository<ApplyingAnswerEntity>,
     private jwtService: JwtService,
     private readonly config: ConfigService,
   ) {}
@@ -48,6 +53,33 @@ export class ReceiptService {
     const receiptRegistrations = await this.receiptRegistrationRepository.find({
       where: { user_uuid },
     });
+    let receiptRegistrationWithRound: GetReceiptRegistration[] = [];
+    receiptRegistrationWithRound = await Promise.all(
+      receiptRegistrations.map(async (receiptRegistration) => {
+        const receipt = await this.receiptRepository.findOne({
+          where: { receipt_id: receiptRegistration.receipt_id },
+        });
+        return {
+          ...receiptRegistration,
+          receipt_round: receipt.receipt_round,
+        };
+      }),
+    );
+    // sort by receipt_registration_end boolean value
+    receiptRegistrationWithRound.sort((a, b) => {
+      if (a.receipt_registration_end > b.receipt_registration_end) return 1;
+      if (a.receipt_registration_end < b.receipt_registration_end) return -1;
+      return 0;
+    });
+    return receiptRegistrationWithRound;
+  }
+
+  async getReceiptRegistrationExceptOpened(
+    user_uuid: string,
+  ): Promise<GetReceiptRegistration[]> {
+    const receiptRegistrations = await this.receiptRegistrationRepository.find({
+      where: { user_uuid },
+    });
     // add receipt_round in receiptRegistration
     let receiptRegistrationWithRound: GetReceiptRegistration[] = [];
     receiptRegistrationWithRound = await Promise.all(
@@ -60,6 +92,22 @@ export class ReceiptService {
           receipt_round: receipt.receipt_round,
         };
       }),
+    );
+    // delete if receipt_registration_open is true or receipt_available_end_date is past
+    receiptRegistrationWithRound = receiptRegistrationWithRound.filter(
+      (receiptRegistration) => {
+        const receipt_available_end_date = new Date(
+          receiptRegistration.receipt_available_end_date,
+        );
+        const now = new Date();
+        if (
+          receiptRegistration.receipt_registration_open ||
+          receipt_available_end_date < now
+        ) {
+          return false;
+        }
+        return true;
+      },
     );
     return receiptRegistrationWithRound;
   }
@@ -121,11 +169,16 @@ export class ReceiptService {
       await this.receiptRegistrationRepository.findOne({
         where: { user_uuid, receipt_registration_number },
       });
-    if (receiptRegistration && !receiptRegistration.receipt_registration_open) {
+    if (
+      receiptRegistration &&
+      !receiptRegistration.receipt_registration_open &&
+      !receiptRegistration.receipt_registration_end
+    ) {
       const randomJudges = await this.judgeRepository
         .createQueryBuilder("judge")
         .select("judge.judge_id")
         .orderBy("RAND()")
+        .orderBy("judge.judge_category", "ASC")
         .take(70)
         .getMany();
       randomJudges.map(async (judge, i) => {
@@ -133,9 +186,16 @@ export class ReceiptService {
           user_uuid,
           judge_id: judge.judge_id,
           receipt_registration_number,
-          applying_judge_number: i,
+          applying_judge_number: i + 1,
         });
         await this.applyingJudgeRepository.save(applyingJudge);
+        const applyingAnswer = this.applyingAnswerRepository.create({
+          user_uuid,
+          receipt_registration_number,
+          applying_judge_id: applyingJudge.applying_judge_id,
+          applying_judge_number: applyingJudge.applying_judge_number,
+        });
+        await this.applyingAnswerRepository.save(applyingAnswer);
       });
       const receiptRegistrationNumber = this.jwtService.sign(
         { receipt_registration_number },
@@ -149,6 +209,32 @@ export class ReceiptService {
         {
           receipt_registration_open: true,
           receipt_number_cookie: receiptRegistrationNumber,
+        },
+      );
+      return { receiptRegistrationNumber };
+    } else {
+      return null;
+    }
+  }
+
+  async continueApplying(
+    user_uuid: string,
+    receipt_registration_number: string,
+  ) {
+    const receiptRegistration =
+      await this.receiptRegistrationRepository.findOne({
+        where: { user_uuid, receipt_registration_number },
+      });
+    if (
+      receiptRegistration &&
+      receiptRegistration.receipt_registration_open &&
+      !receiptRegistration.receipt_registration_end
+    ) {
+      const receiptRegistrationNumber = this.jwtService.sign(
+        { receipt_registration_number },
+        {
+          secret: this.config.get(`RECEIPT_NUMBER_SECRET`),
+          expiresIn: this.config.get(`RECEIPT_NUMBER_EXPIRES_IN`),
         },
       );
       return { receiptRegistrationNumber };

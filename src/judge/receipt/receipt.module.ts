@@ -5,7 +5,10 @@ import { JwtService } from "@nestjs/jwt";
 import { ReceiptEntity, ReceiptRegistrationEntity } from "./receipt.entity";
 import { ReceiptController } from "./receipt.controller";
 import { ReceiptService } from "./receipt.service";
-import { ApplyingJudgeEntity } from "../applying/applying.entity";
+import {
+  ApplyingJudgeEntity,
+  ApplyingAnswerEntity,
+} from "../applying/applying.entity";
 import { JudgeEntity } from "../judge.entity";
 
 @Module({
@@ -15,6 +18,7 @@ import { JudgeEntity } from "../judge.entity";
       ReceiptRegistrationEntity,
       ApplyingJudgeEntity,
       JudgeEntity,
+      ApplyingAnswerEntity,
     ]),
   ],
   controllers: [ReceiptController],

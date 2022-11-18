@@ -15,7 +15,7 @@ export class ApplyingJudgeEntity {
   @Column({ length: 36, nullable: false, select: false })
   user_uuid: string;
 
-  @Column({ length: 40, nullable: false })
+  @Column({ length: 40, nullable: false, select: false })
   receipt_registration_number: string;
 
   @Column({ nullable: false })
@@ -39,14 +39,17 @@ export class ApplyingAnswerEntity {
   @PrimaryGeneratedColumn("increment")
   applying_answer_id: number;
 
-  @Column({ length: 36, nullable: false })
+  @Column({ length: 36, nullable: false, select: false })
   user_uuid: string;
 
-  @Column({ length: 40, nullable: false })
+  @Column({ length: 40, nullable: false, select: false })
   receipt_registration_number: string;
 
   @Column({ nullable: false })
   applying_judge_id: number;
+
+  @Column({ nullable: false })
+  applying_judge_number: number; //할당된 문제 번호
 
   @Column({ nullable: true })
   applying_answer_vector: number;
