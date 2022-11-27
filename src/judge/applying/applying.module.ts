@@ -10,6 +10,7 @@ import { ApplyingService } from "./applying.service";
 import { ApplyingStrategy } from "./applying.strategy";
 import { JudgeEntity } from "../judge.entity";
 import { ReceiptRegistrationEntity } from "../receipt/receipt.entity";
+import { ResultEntity, ResultAnswerEntity } from "../result/result.entity";
 
 @Module({
   imports: [
@@ -18,6 +19,8 @@ import { ReceiptRegistrationEntity } from "../receipt/receipt.entity";
       ApplyingJudgeEntity,
       JudgeEntity,
       ReceiptRegistrationEntity,
+      ResultEntity,
+      ResultAnswerEntity,
     ]),
     PassportModule,
     JwtModule,

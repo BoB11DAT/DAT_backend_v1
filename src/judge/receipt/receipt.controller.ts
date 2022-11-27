@@ -13,7 +13,7 @@ import { AccessGuard } from "src/auth/access.guard";
 import { AdminGuard } from "src/auth/admin.guard";
 import {
   GetReceiptRegistration,
-  receiptRegistrationNumber,
+  ReceiptRegistrationNumber,
 } from "./receipt.interface";
 
 @Controller({
@@ -72,7 +72,7 @@ export class ReceiptController {
   @UseGuards(AccessGuard)
   async createReceiptApplying(
     @Req() req,
-    @Body() receiptRegistrationData: receiptRegistrationNumber,
+    @Body() receiptRegistrationData: ReceiptRegistrationNumber,
   ) {
     return this.receiptService.receiptApplying(
       this.receiptService.getUUIDFromReq(req),
@@ -85,7 +85,7 @@ export class ReceiptController {
   @HttpCode(200)
   async continueApplying(
     @Req() req,
-    @Body() receiptRegistrationData: receiptRegistrationNumber,
+    @Body() receiptRegistrationData: ReceiptRegistrationNumber,
   ) {
     return this.receiptService.continueApplying(
       this.receiptService.getUUIDFromReq(req),

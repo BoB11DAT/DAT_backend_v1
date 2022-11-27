@@ -111,7 +111,7 @@ export class AuthService {
     const user_uuid = this.getUUIDFromToken(refreshToken, "REFRESH");
     await this.userRepository.update(
       { user_uuid },
-      { user_refresh_token: null as any },
+      { user_refresh_token: null as null },
     );
     return {
       domain: this.config.get("SERVICE_DOMAIN"),

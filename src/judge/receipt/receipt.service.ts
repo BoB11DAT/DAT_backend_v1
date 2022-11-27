@@ -192,6 +192,7 @@ export class ReceiptService {
         const applyingAnswer = this.applyingAnswerRepository.create({
           user_uuid,
           receipt_registration_number,
+          judge_id: judge.judge_id,
           applying_judge_id: applyingJudge.applying_judge_id,
           applying_judge_number: applyingJudge.applying_judge_number,
         });
@@ -235,6 +236,12 @@ export class ReceiptService {
         {
           secret: this.config.get(`RECEIPT_NUMBER_SECRET`),
           expiresIn: this.config.get(`RECEIPT_NUMBER_EXPIRES_IN`),
+        },
+      );
+      this.receiptRegistrationRepository.update(
+        { receipt_registration_number, user_uuid },
+        {
+          receipt_number_cookie: receiptRegistrationNumber,
         },
       );
       return { receiptRegistrationNumber };

@@ -7,6 +7,6 @@ export class GetReceiptRegistration {
   receipt_registration_end: boolean;
 }
 
-export class receiptRegistrationNumber {
+export class ReceiptRegistrationNumber {
   receipt_registration_number: string;
 }

@@ -8,6 +8,7 @@ import { ApplyingJudgeEntity, ApplyingAnswerEntity } from "./applying.entity";
 import { JudgeEntity } from "../judge.entity";
 import { Judge } from "./applying.interface";
 import { ReceiptRegistrationEntity } from "../receipt/receipt.entity";
+import { ResultEntity, ResultAnswerEntity } from "../result/result.entity";
 
 @Injectable()
 export class ApplyingService {
@@ -20,11 +21,30 @@ export class ApplyingService {
     private readonly judgeRepository: Repository<JudgeEntity>,
     @InjectRepository(ReceiptRegistrationEntity)
     private readonly receiptRegistrationRepository: Repository<ReceiptRegistrationEntity>,
+    @InjectRepository(ResultEntity)
+    private readonly resultRepository: Repository<ResultEntity>,
+    @InjectRepository(ResultAnswerEntity)
+    private readonly resultAnswerRepository: Repository<ResultAnswerEntity>,
     private jwtService: JwtService,
     private readonly config: ConfigService,
   ) {}
   getHello(): string {
     return "Hello World!";
+  }
+
+  async receiptNumberMatch(
+    receiptNumber: string,
+    receiptNumberToken: string,
+  ): Promise<boolean> {
+    const receiptRegistration =
+      await this.receiptRegistrationRepository.findOne({
+        where: { receipt_registration_number: receiptNumber },
+        select: ["receipt_number_cookie"],
+      });
+    if (receiptRegistration?.receipt_number_cookie === receiptNumberToken) {
+      return true;
+    }
+    return false;
   }
 
   async findAll(
@@ -95,6 +115,7 @@ export class ApplyingService {
     applying_judge_number: number,
     applying_answer_vector: number,
   ): Promise<UpdateResult> {
+    const vector = applying_answer_vector ? applying_answer_vector : null;
     return await this.applyingAnswerRepository.update(
       {
         user_uuid,
@@ -102,7 +123,7 @@ export class ApplyingService {
         applying_judge_number,
       },
       {
-        applying_answer_vector,
+        applying_answer_vector: vector,
       },
     );
   }
@@ -119,6 +140,37 @@ export class ApplyingService {
         })
       ).receipt_registration_end
     ) {
+      const applyingAnswers = await this.applyingAnswerRepository.find({
+        where: { user_uuid, receipt_registration_number },
+      });
+      const receipt_id = (
+        await this.receiptRegistrationRepository.findOne({
+          where: { user_uuid, receipt_registration_number },
+          select: ["receipt_id"],
+        })
+      ).receipt_id;
+      await this.resultRepository.insert({
+        user_uuid,
+        receipt_registration_number,
+        receipt_id,
+      });
+      applyingAnswers.forEach(async (applyingAnswer) => {
+        const judge = await this.judgeRepository.findOne({
+          where: { judge_id: applyingAnswer.judge_id },
+          select: ["judge_answer"],
+        });
+        const resultAnswer = this.resultAnswerRepository.create({
+          user_uuid,
+          receipt_registration_number,
+          judge_id: applyingAnswer.judge_id,
+          applying_answer_id: applyingAnswer.applying_answer_id,
+          applying_judge_number: applyingAnswer.applying_judge_number,
+          result_answer_vector: applyingAnswer.applying_answer_vector,
+          result_answer_correct:
+            applyingAnswer.applying_answer === judge.judge_answer,
+        });
+        await this.resultAnswerRepository.save(resultAnswer);
+      });
       return await this.receiptRegistrationRepository.update(
         {
           user_uuid,
@@ -126,12 +178,13 @@ export class ApplyingService {
         },
         {
           receipt_registration_end: true,
+          receipt_number_cookie: null,
         },
       );
     } else {
       return null;
     }
-  }// 끝나면 db에 저장된 수험번호 쿠키 지우고 정답 db에 수험번호와 유저 uuid랑 applying_judge_id, applying_answer_id랑 정답 여부 저장
+  } // 끝나면 db에 저장된 수험번호 쿠키 지우고 정답 db에 수험번호와 유저 uuid랑 applying_judge_id, applying_answer_id랑 정답 여부 저장
 }
 /* 구현할 때 우선 시험 응시 시작하면 문제 랜덤으로 뽑아오고 뽑아온 만큼 applying_answers에
 칼럼을 만들어서 applying_judge의 id를 등록해주고 문제 전체를 불러온다.

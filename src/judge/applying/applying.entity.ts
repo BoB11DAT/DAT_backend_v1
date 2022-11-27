@@ -49,6 +49,9 @@ export class ApplyingAnswerEntity {
   applying_judge_id: number;
 
   @Column({ nullable: false })
+  judge_id: number;
+
+  @Column({ nullable: false })
   applying_judge_number: number; //할당된 문제 번호
 
   @Column({ nullable: true })

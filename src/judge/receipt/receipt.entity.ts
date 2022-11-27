@@ -25,7 +25,7 @@ export class ReceiptEntity {
   receipt_end_date: Date;
 
   @Column({ nullable: false })
-  receipt_type: number;
+  receipt_type: number; //아마 일반, 기업
 
   @CreateDateColumn({ select: false })
   receipt_created_date: Date;
