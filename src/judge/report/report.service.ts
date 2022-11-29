@@ -171,10 +171,7 @@ export class ReportService {
     answers.forEach(async (answer) => {
       if (answer.result_answer_correct) {
         score += 1;
-        const judgeCategory = await this.judgeRepository.findOne({
-          where: { judge_id: answer.judge_id },
-        });
-        if (judgeCategory.judge_category === 0) {
+        if (answer.receipt_judge_number <= 50) {
           winscore += 1;
         } else {
           appscore += 1;
