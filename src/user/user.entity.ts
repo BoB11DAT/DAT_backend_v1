@@ -29,7 +29,7 @@ export class UserEntity {
   @Column({ length: 200, nullable: false, select: false })
   user_pw: string;
 
-  @Column({ type: "int", nullable: false })
+  @Column({ type: "int", nullable: true })
   user_gender: number;
 
   @Column({ nullable: false })
@@ -38,19 +38,19 @@ export class UserEntity {
   @Column({ length: 20, nullable: false, unique: true })
   user_tell: string;
 
-  @Column({ length: 50, nullable: false })
+  @Column({ length: 50, nullable: true })
   user_belong: string;
 
-  @Column({ length: 30, nullable: false })
+  @Column({ length: 30, nullable: true })
   user_duty: string;
 
-  @Column({ length: 10, nullable: false })
+  @Column({ length: 10, nullable: true })
   user_zip_code: string;
 
-  @Column({ length: 254, nullable: false })
+  @Column({ length: 254, nullable: true })
   user_address: string;
 
-  @Column({ length: 100, nullable: false })
+  @Column({ length: 100, nullable: true })
   user_address_detail: string;
 
   @Column({ default: 0, nullable: false })

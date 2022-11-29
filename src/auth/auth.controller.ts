@@ -75,12 +75,9 @@ export class AuthController {
 
   @Get("logout")
   @UseGuards(AuthGuard("jwt-refresh-token"))
-  async logout(@Req() req, @Res() res) {
-    const COOKIE_OPTION = this.authService.deleteRefreshToken(
-      req.cookies.refreshToken,
-    );
-    res.clearCookie("refreshToken", COOKIE_OPTION);
-    return res.redirect(this.config.get("FRONTEND_URL"));
+  async logout(@Req() req) {
+    this.authService.deleteRefreshToken(req.cookies.refreshToken);
+    return;
   }
 
   @Post("valid/password")

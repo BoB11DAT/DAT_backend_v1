@@ -107,18 +107,13 @@ export class AuthService {
     return false;
   }
 
-  async deleteRefreshToken(refreshToken: string): Promise<object> {
+  async deleteRefreshToken(refreshToken: string): Promise<void> {
     const user_uuid = this.getUUIDFromToken(refreshToken, "REFRESH");
     await this.userRepository.update(
       { user_uuid },
-      { user_refresh_token: null as null },
+      { user_refresh_token: null },
     );
-    return {
-      domain: this.config.get("SERVICE_DOMAIN"),
-      path: "/",
-      httpOnly: true,
-      maxAge: 0,
-    };
+    return;
   }
 
   getToken(user_uuid: string, kind: string): string {

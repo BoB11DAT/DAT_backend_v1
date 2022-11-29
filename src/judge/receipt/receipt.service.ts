@@ -116,6 +116,9 @@ export class ReceiptService {
         const receipt_available_end_date = new Date(
           receiptRegistration.receipt_available_end_date,
         );
+        receipt_available_end_date.setDate(
+          receipt_available_end_date.getDate() + 1,
+        );
         const now = new Date();
         if (
           receiptRegistration.receipt_registration_open ||
