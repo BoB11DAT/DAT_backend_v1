@@ -9,7 +9,8 @@ import {
   HttpCode,
 } from "@nestjs/common";
 import { ApplyingService } from "./applying.service";
-import { ApplyingJudgeEntity, ApplyingAnswerEntity } from "./applying.entity";
+import { ReceiptJudgeEntity } from "../receipt/receipt.entity";
+import { ApplyingAnswerEntity } from "./applying.entity";
 import { AccessGuard } from "src/auth/access.guard";
 import { AdminGuard } from "src/auth/admin.guard";
 import { ApplyingGuard } from "./applying.guard";
@@ -51,7 +52,7 @@ export class ApplyingController {
     return this.applyingService.applyingAnswer(
       this.applyingService.getUUIDFromReq(req),
       this.applyingService.getReceiptNumberFromReq(req),
-      applyingAnswerData.applying_judge_number,
+      applyingAnswerData.receipt_judge_number,
       applyingAnswerData.applying_answer,
     );
   }
@@ -66,7 +67,7 @@ export class ApplyingController {
     return this.applyingService.applyingVector(
       this.applyingService.getUUIDFromReq(req),
       this.applyingService.getReceiptNumberFromReq(req),
-      applyingAnswerData.applying_judge_number,
+      applyingAnswerData.receipt_judge_number,
       applyingAnswerData.applying_answer_vector,
     );
   }

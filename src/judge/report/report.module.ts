@@ -2,15 +2,16 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
-import { ResultEntity, ResultAnswerEntity } from "./result.entity";
-import { ReceiptController } from "./result.controller";
-import { ResultService } from "./result.service";
+import { ResultEntity, ResultAnswerEntity } from "../result/result.entity";
+import { ReportController } from "./report.controller";
+import { ReportService } from "./report.service";
 import { JudgeEntity } from "../judge.entity";
 import {
   ReceiptEntity,
-  ReceiptRegistrationEntity,
   ReceiptJudgeEntity,
+  ReceiptRegistrationEntity,
 } from "../receipt/receipt.entity";
+import { ReportEntity, ReportAnswerEntity } from "./report.entity";
 
 @Module({
   imports: [
@@ -19,11 +20,13 @@ import {
       ResultAnswerEntity,
       JudgeEntity,
       ReceiptEntity,
-      ReceiptRegistrationEntity,
+      ReportEntity,
       ReceiptJudgeEntity,
+      ReportAnswerEntity,
+      ReceiptRegistrationEntity,
     ]),
   ],
-  controllers: [ReceiptController],
-  providers: [ConfigService, JwtService, ResultService],
+  controllers: [ReportController],
+  providers: [ConfigService, JwtService, ReportService],
 })
-export class ResultModule {}
+export class ReportModule {}

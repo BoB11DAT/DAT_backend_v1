@@ -82,3 +82,27 @@ export class ReceiptRegistrationEntity {
     delete this.receipt_registration_update_date;
   }
 }
+
+@Entity("receipt_judges")
+export class ReceiptJudgeEntity {
+  @PrimaryGeneratedColumn("increment")
+  receipt_judge_id: number;
+
+  @Column({ nullable: false, select: false })
+  receipt_id: number;
+
+  @Column({ nullable: false })
+  judge_id: number;
+
+  @Column({ nullable: false })
+  receipt_judge_number: number; //할당된 문제 번호
+
+  @CreateDateColumn({ select: false })
+  receipt_judge_created_date: Date;
+
+  @UpdateDateColumn({ select: false })
+  receipt_judge_updated_date: Date;
+
+  @DeleteDateColumn({ select: false })
+  receipt_judge_deleted_date: Date;
+}

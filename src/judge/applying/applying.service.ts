@@ -1,26 +1,32 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, UpdateResult } from "typeorm";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { Request } from "express";
-import { ApplyingJudgeEntity, ApplyingAnswerEntity } from "./applying.entity";
+import { ApplyingAnswerEntity } from "./applying.entity";
 import { JudgeEntity } from "../judge.entity";
 import { Judge } from "./applying.interface";
-import { ReceiptRegistrationEntity } from "../receipt/receipt.entity";
+import {
+  ReceiptEntity,
+  ReceiptRegistrationEntity,
+  ReceiptJudgeEntity,
+} from "../receipt/receipt.entity";
 import { ResultEntity, ResultAnswerEntity } from "../result/result.entity";
 
 @Injectable()
 export class ApplyingService {
   constructor(
-    @InjectRepository(ApplyingJudgeEntity)
-    private readonly applyingJudgeRepository: Repository<ApplyingJudgeEntity>,
+    @InjectRepository(ReceiptJudgeEntity)
+    private readonly receiptJudgeRepository: Repository<ReceiptJudgeEntity>,
     @InjectRepository(ApplyingAnswerEntity)
     private readonly applyingAnswerRepository: Repository<ApplyingAnswerEntity>,
     @InjectRepository(JudgeEntity)
     private readonly judgeRepository: Repository<JudgeEntity>,
     @InjectRepository(ReceiptRegistrationEntity)
     private readonly receiptRegistrationRepository: Repository<ReceiptRegistrationEntity>,
+    @InjectRepository(ReceiptEntity)
+    private readonly receiptRepository: Repository<ReceiptEntity>,
     @InjectRepository(ResultEntity)
     private readonly resultRepository: Repository<ResultEntity>,
     @InjectRepository(ResultAnswerEntity)
@@ -47,13 +53,46 @@ export class ApplyingService {
     return false;
   }
 
+  async getRound(
+    user_uuid: string,
+    receipt_registration_number: string,
+  ): Promise<string> {
+    const reg_num = /^D\d{2}-\d{4}-\d{1}-\d{4}$/;
+    if (!reg_num.test(receipt_registration_number)) {
+      throw new HttpException(
+        "receipt_registration_number is not valid",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const receiptRegistration =
+      await this.receiptRegistrationRepository.findOne({
+        where: {
+          user_uuid,
+          receipt_registration_number,
+        },
+      });
+    const receipt = await this.receiptRepository.findOne({
+      where: { receipt_id: receiptRegistration.receipt_id },
+    });
+    return receipt.receipt_round;
+  }
+
   async findAll(
     user_uuid: string,
     receipt_registration_number: string,
   ): Promise<Judge[]> {
-    const applyingJudges = await this.applyingJudgeRepository.find({
-      where: { user_uuid, receipt_registration_number },
-      order: { applying_judge_number: "ASC" },
+    const receiptRound = await this.getRound(
+      user_uuid,
+      receipt_registration_number,
+    );
+    const receiptId = (
+      await this.receiptRepository.findOne({
+        where: { receipt_round: receiptRound },
+      })
+    ).receipt_id;
+    const applyingJudges = await this.receiptJudgeRepository.find({
+      where: { receipt_id: receiptId },
+      order: { receipt_judge_number: "ASC" },
     });
     const judges = applyingJudges.map(async (applyingJudge) => {
       const judgeOrigin = await this.judgeRepository.findOne({
@@ -94,14 +133,14 @@ export class ApplyingService {
   async applyingAnswer(
     user_uuid: string,
     receipt_registration_number: string,
-    applying_judge_number: number,
+    receipt_judge_number: number,
     applying_answer: string,
   ): Promise<UpdateResult> {
     return await this.applyingAnswerRepository.update(
       {
         user_uuid,
         receipt_registration_number,
-        applying_judge_number,
+        receipt_judge_number,
       },
       {
         applying_answer,
@@ -112,7 +151,7 @@ export class ApplyingService {
   async applyingVector(
     user_uuid: string,
     receipt_registration_number: string,
-    applying_judge_number: number,
+    receipt_judge_number: number,
     applying_answer_vector: number,
   ): Promise<UpdateResult> {
     const vector = applying_answer_vector ? applying_answer_vector : null;
@@ -120,7 +159,7 @@ export class ApplyingService {
       {
         user_uuid,
         receipt_registration_number,
-        applying_judge_number,
+        receipt_judge_number,
       },
       {
         applying_answer_vector: vector,
@@ -164,7 +203,7 @@ export class ApplyingService {
           receipt_registration_number,
           judge_id: applyingAnswer.judge_id,
           applying_answer_id: applyingAnswer.applying_answer_id,
-          applying_judge_number: applyingAnswer.applying_judge_number,
+          receipt_judge_number: applyingAnswer.receipt_judge_number,
           result_answer_vector: applyingAnswer.applying_answer_vector,
           result_answer_correct:
             applyingAnswer.applying_answer === judge.judge_answer,

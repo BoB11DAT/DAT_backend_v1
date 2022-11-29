@@ -4,19 +4,24 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 import { JwtModule } from "@nestjs/jwt";
-import { ApplyingJudgeEntity, ApplyingAnswerEntity } from "./applying.entity";
+import { ApplyingAnswerEntity } from "./applying.entity";
 import { ApplyingController } from "./applying.controller";
 import { ApplyingService } from "./applying.service";
 import { ApplyingStrategy } from "./applying.strategy";
 import { JudgeEntity } from "../judge.entity";
-import { ReceiptRegistrationEntity } from "../receipt/receipt.entity";
+import {
+  ReceiptEntity,
+  ReceiptRegistrationEntity,
+  ReceiptJudgeEntity,
+} from "../receipt/receipt.entity";
 import { ResultEntity, ResultAnswerEntity } from "../result/result.entity";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       ApplyingAnswerEntity,
-      ApplyingJudgeEntity,
+      ReceiptJudgeEntity,
+      ReceiptEntity,
       JudgeEntity,
       ReceiptRegistrationEntity,
       ResultEntity,

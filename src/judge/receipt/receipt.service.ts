@@ -1,15 +1,16 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { Request } from "express";
-import { ReceiptEntity, ReceiptRegistrationEntity } from "./receipt.entity";
-import { GetReceiptRegistration } from "./receipt.interface";
 import {
-  ApplyingJudgeEntity,
-  ApplyingAnswerEntity,
-} from "../applying/applying.entity";
+  ReceiptEntity,
+  ReceiptRegistrationEntity,
+  ReceiptJudgeEntity,
+} from "./receipt.entity";
+import { GetReceiptRegistration } from "./receipt.interface";
+import { ApplyingAnswerEntity } from "../applying/applying.entity";
 import { JudgeEntity } from "../judge.entity";
 
 @Injectable()
@@ -19,8 +20,8 @@ export class ReceiptService {
     private readonly receiptRepository: Repository<ReceiptEntity>,
     @InjectRepository(ReceiptRegistrationEntity)
     private readonly receiptRegistrationRepository: Repository<ReceiptRegistrationEntity>,
-    @InjectRepository(ApplyingJudgeEntity)
-    private readonly applyingJudgeRepository: Repository<ApplyingJudgeEntity>,
+    @InjectRepository(ReceiptJudgeEntity)
+    private readonly receiptJudgeRepository: Repository<ReceiptJudgeEntity>,
     @InjectRepository(JudgeEntity)
     private readonly judgeRepository: Repository<JudgeEntity>,
     @InjectRepository(ApplyingAnswerEntity)
@@ -42,9 +43,25 @@ export class ReceiptService {
     }).user_uuid;
   }
 
-  async createReceipt(receipt: ReceiptEntity): Promise<ReceiptEntity> {
-    const receiptCreated = this.receiptRepository.create(receipt);
-    return await this.receiptRepository.save(receiptCreated);
+  async createReceipt(receiptData: ReceiptEntity): Promise<ReceiptEntity> {
+    const receiptCreated = this.receiptRepository.create(receiptData);
+    const receipt = await this.receiptRepository.save(receiptCreated);
+    const randomJudges = await this.judgeRepository
+      .createQueryBuilder("judge")
+      .select("judge.judge_id")
+      .orderBy("RAND()")
+      .orderBy("judge.judge_category", "ASC")
+      .take(70)
+      .getMany();
+    randomJudges.map(async (judge, i) => {
+      const receiptJudge = this.receiptJudgeRepository.create({
+        judge_id: judge.judge_id,
+        receipt_id: receiptCreated.receipt_id,
+        receipt_judge_number: i + 1,
+      });
+      await this.receiptJudgeRepository.save(receiptJudge);
+    });
+    return receipt;
   }
 
   async getReceiptRegistration(
@@ -161,6 +178,30 @@ export class ReceiptService {
     return receiptRegistration;
   }
 
+  async getRound(
+    user_uuid: string,
+    receipt_registration_number: string,
+  ): Promise<string> {
+    const reg_num = /^D\d{2}-\d{4}-\d{1}-\d{4}$/;
+    if (!reg_num.test(receipt_registration_number)) {
+      throw new HttpException(
+        "receipt_registration_number is not valid",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const receiptRegistration =
+      await this.receiptRegistrationRepository.findOne({
+        where: {
+          user_uuid,
+          receipt_registration_number,
+        },
+      });
+    const receipt = await this.receiptRepository.findOne({
+      where: { receipt_id: receiptRegistration.receipt_id },
+    });
+    return receipt.receipt_round;
+  }
+
   async receiptApplying(
     user_uuid: string,
     receipt_registration_number: string,
@@ -174,27 +215,16 @@ export class ReceiptService {
       !receiptRegistration.receipt_registration_open &&
       !receiptRegistration.receipt_registration_end
     ) {
-      const randomJudges = await this.judgeRepository
-        .createQueryBuilder("judge")
-        .select("judge.judge_id")
-        .orderBy("RAND()")
-        .orderBy("judge.judge_category", "ASC")
-        .take(70)
-        .getMany();
-      randomJudges.map(async (judge, i) => {
-        const applyingJudge = this.applyingJudgeRepository.create({
-          user_uuid,
-          judge_id: judge.judge_id,
-          receipt_registration_number,
-          applying_judge_number: i + 1,
-        });
-        await this.applyingJudgeRepository.save(applyingJudge);
+      const receiptJudges = await this.receiptJudgeRepository.find({
+        where: { receipt_id: receiptRegistration.receipt_id },
+      });
+      receiptJudges.map(async (judge, i) => {
         const applyingAnswer = this.applyingAnswerRepository.create({
           user_uuid,
           receipt_registration_number,
           judge_id: judge.judge_id,
-          applying_judge_id: applyingJudge.applying_judge_id,
-          applying_judge_number: applyingJudge.applying_judge_number,
+          receipt_judge_id: judge.receipt_judge_id,
+          receipt_judge_number: judge.receipt_judge_number,
         });
         await this.applyingAnswerRepository.save(applyingAnswer);
       });

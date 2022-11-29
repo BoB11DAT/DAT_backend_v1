@@ -4,9 +4,10 @@ import { JwtService } from "@nestjs/jwt";
 import { ReceiptModule } from "./receipt/receipt.module";
 import { ApplyingModule } from "./applying/applying.module";
 import { ResultModule } from "./result/result.module";
+import { ReportModule } from "./report/report.module";
 
 @Module({
-  imports: [ReceiptModule, ApplyingModule, ResultModule],
+  imports: [ReceiptModule, ApplyingModule, ResultModule, ReportModule],
   controllers: [],
   providers: [ConfigService, JwtService],
 })

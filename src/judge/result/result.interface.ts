@@ -5,7 +5,7 @@ export class Result {
 }
 
 export class Solution {
-  applying_judge_number: number;
+  receipt_judge_number: number;
   judge_id: number;
   judge_content: string;
   judge_category: number;

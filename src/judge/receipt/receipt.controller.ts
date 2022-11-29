@@ -67,9 +67,22 @@ export class ReceiptController {
     ); //entity에서 interface로 바꾸기, round 대신 id로 바꾸기
   }
 
-  @Post("apply")
-  @HttpCode(200)
+  @Post("round")
   @UseGuards(AccessGuard)
+  @HttpCode(200)
+  async getRound(
+    @Req() req,
+    @Body() receiptRegistrationNumber: ReceiptRegistrationNumber,
+  ): Promise<string> {
+    return this.receiptService.getRound(
+      this.receiptService.getUUIDFromReq(req),
+      receiptRegistrationNumber.receipt_registration_number,
+    );
+  }
+
+  @Post("apply")
+  @UseGuards(AccessGuard)
+  @HttpCode(200)
   async createReceiptApplying(
     @Req() req,
     @Body() receiptRegistrationData: ReceiptRegistrationNumber,

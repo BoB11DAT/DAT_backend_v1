@@ -52,7 +52,7 @@ export class ResultAnswerEntity {
   applying_answer_id: number;
 
   @Column({ nullable: false })
-  applying_judge_number: number; //할당된 문제 번호
+  receipt_judge_number: number; //할당된 문제 번호
 
   @Column({ nullable: false })
   result_answer_vector: number;
