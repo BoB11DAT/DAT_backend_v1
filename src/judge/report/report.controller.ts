@@ -39,4 +39,17 @@ export class ReportController {
   async createReport(@Body() body): Promise<any> {
     return await this.reportService.setCorrectAnswerRate(body.receipt_id);
   }
+
+  @Post("score")
+  @UseGuards(AccessGuard)
+  @HttpCode(200)
+  async getReportScore(
+    @Req() req,
+    @Body() body: ReceiptRegistrationNumber,
+  ): Promise<any> {
+    return await this.reportService.getScore(
+      this.reportService.getUUIDFromReq(req),
+      body.receipt_registration_number,
+    );
+  }
 }

@@ -157,4 +157,30 @@ export class ReportService {
     });
     return;
   }
+
+  async getScore(
+    user_uuid: string,
+    receipt_registration_number: string,
+  ): Promise<object> {
+    const answers = await this.resultAnswerRepository.find({
+      where: { user_uuid, receipt_registration_number },
+    });
+    let winscore = 0;
+    let appscore = 0;
+    let score = 0;
+    answers.forEach(async (answer) => {
+      if (answer.result_answer_correct) {
+        score += 1;
+        const judgeCategory = await this.judgeRepository.findOne({
+          where: { judge_id: answer.judge_id },
+        });
+        if (judgeCategory.judge_category === 0) {
+          winscore += 1;
+        } else {
+          appscore += 1;
+        }
+      }
+    });
+    return { score, winscore, appscore };
+  }
 }
