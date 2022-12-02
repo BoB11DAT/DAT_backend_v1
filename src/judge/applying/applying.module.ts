@@ -15,6 +15,7 @@ import {
   ReceiptJudgeEntity,
 } from "../receipt/receipt.entity";
 import { ResultEntity, ResultAnswerEntity } from "../result/result.entity";
+import { ReportEntity, ReportAnswerEntity } from "../report/report.entity";
 
 @Module({
   imports: [
@@ -26,6 +27,8 @@ import { ResultEntity, ResultAnswerEntity } from "../result/result.entity";
       ReceiptRegistrationEntity,
       ResultEntity,
       ResultAnswerEntity,
+      ReportEntity,
+      ReportAnswerEntity,
     ]),
     PassportModule,
     JwtModule,

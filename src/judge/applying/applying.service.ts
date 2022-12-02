@@ -13,6 +13,7 @@ import {
   ReceiptJudgeEntity,
 } from "../receipt/receipt.entity";
 import { ResultEntity, ResultAnswerEntity } from "../result/result.entity";
+import { ReportEntity, ReportAnswerEntity } from "../report/report.entity";
 
 @Injectable()
 export class ApplyingService {
@@ -31,6 +32,10 @@ export class ApplyingService {
     private readonly resultRepository: Repository<ResultEntity>,
     @InjectRepository(ResultAnswerEntity)
     private readonly resultAnswerRepository: Repository<ResultAnswerEntity>,
+    @InjectRepository(ReportEntity)
+    private readonly reportRepository: Repository<ReportEntity>,
+    @InjectRepository(ReportAnswerEntity)
+    private readonly reportAnswerRepository: Repository<ReportAnswerEntity>,
     private jwtService: JwtService,
     private readonly config: ConfigService,
   ) {}
@@ -167,6 +172,52 @@ export class ApplyingService {
     );
   }
 
+  //지울것
+  async setReport(receipt_id: number): Promise<any> {
+    let reportEntity = this.reportRepository.create();
+    reportEntity.receipt_id = receipt_id;
+    reportEntity = await this.reportRepository.save(reportEntity);
+    for (let i = 0; i < 70; i++) {
+      const report = this.reportAnswerRepository.create();
+      report.report_id = reportEntity.report_id;
+      report.reciept_judge_number = i + 1;
+      await this.reportAnswerRepository.save(report);
+    }
+    const results = await this.resultRepository.find({
+      where: { receipt_id },
+    });
+    // set correct answer rate
+    results.forEach(async (result) => {
+      const resultAnswers = await this.resultAnswerRepository.find({
+        where: {
+          receipt_registration_number: result.receipt_registration_number,
+        },
+      });
+      reportEntity.receipt_participants += 1;
+      await this.reportRepository.update(
+        { report_id: reportEntity.report_id },
+        reportEntity,
+      );
+      resultAnswers.forEach(async (resultAnswer) => {
+        if (resultAnswer.result_answer_correct) {
+          const reportAnswer = await this.reportAnswerRepository.findOne({
+            where: {
+              report_id: reportEntity.report_id,
+              reciept_judge_number: resultAnswer.receipt_judge_number,
+            },
+          });
+          reportAnswer.report_correct_answer_count += 1;
+          await this.reportAnswerRepository.update(
+            reportAnswer.report_answer_id,
+            reportAnswer,
+          );
+        }
+      });
+    });
+    return;
+  }
+  //지울것
+
   async applyingEnd(
     user_uuid: string,
     receipt_registration_number: string,
@@ -210,6 +261,23 @@ export class ApplyingService {
         });
         await this.resultAnswerRepository.save(resultAnswer);
       });
+      //임시코드
+      const report_id = (
+        await this.reportRepository.findOne({
+          where: {
+            receipt_id,
+          },
+        })
+      )?.report_id;
+      if (!receipt_id) return;
+      this.reportRepository.delete({
+        report_id,
+      });
+      this.reportAnswerRepository.delete({
+        report_id,
+      });
+      this.setReport(receipt_id);
+      //임시코드
       return await this.receiptRegistrationRepository.update(
         {
           user_uuid,

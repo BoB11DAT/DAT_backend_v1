@@ -96,6 +96,7 @@ export class ReportService {
     });
     const resultAnswers = await this.resultAnswerRepository.find({
       where: { user_uuid, receipt_registration_number },
+      order: { receipt_judge_number: "ASC" },
     });
     resultAnswers.forEach((resultAnswer, i) => {
       reportData[i].result_answer_correct = resultAnswer.result_answer_correct;
