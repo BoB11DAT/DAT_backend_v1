@@ -37,7 +37,7 @@ export class ReportController {
   @Post("create")
   @UseGuards(AdminGuard)
   async createReport(@Body() body): Promise<any> {
-    return await this.reportService.setCorrectAnswerRate(body.receipt_id);
+    return await this.reportService.setReportData(body.receipt_id);
   }
 
   @Post("score")
@@ -48,6 +48,32 @@ export class ReportController {
     @Body() body: ReceiptRegistrationNumber,
   ): Promise<any> {
     return await this.reportService.getScore(
+      this.reportService.getUUIDFromReq(req),
+      body.receipt_registration_number,
+    );
+  }
+
+  @Post("vectors")
+  @UseGuards(AccessGuard)
+  @HttpCode(200)
+  async getTop3Vectors(
+    @Req() req,
+    @Body() body: ReceiptRegistrationNumber,
+  ): Promise<any> {
+    return await this.reportService.getTop3Vectors(
+      this.reportService.getUUIDFromReq(req),
+      body.receipt_registration_number,
+    );
+  }
+
+  @Post("vectors/user")
+  @UseGuards(AccessGuard)
+  @HttpCode(200)
+  async getUserVectors(
+    @Req() req,
+    @Body() body: ReceiptRegistrationNumber,
+  ): Promise<any> {
+    return await this.reportService.getUserVectors(
       this.reportService.getUUIDFromReq(req),
       body.receipt_registration_number,
     );

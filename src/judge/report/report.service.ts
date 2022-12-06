@@ -13,6 +13,8 @@ import {
   ReceiptRegistrationEntity,
 } from "../receipt/receipt.entity";
 import { ReportData } from "./report.interface";
+import { report } from "process";
+import vectorItems from "src/constants/vectorItems";
 
 @Injectable()
 export class ReportService {
@@ -115,7 +117,7 @@ export class ReportService {
     return reportData;
   }
 
-  async setCorrectAnswerRate(receipt_id: number): Promise<any> {
+  async setReportData(receipt_id: number): Promise<any> {
     let reportEntity = this.reportRepository.create();
     reportEntity.receipt_id = receipt_id;
     reportEntity = await this.reportRepository.save(reportEntity);
@@ -180,5 +182,91 @@ export class ReportService {
       }
     });
     return { score, winscore, appscore };
+  }
+
+  async getTop3Vectors(
+    user_uuid: string,
+    receipt_registration_number: string,
+  ): Promise<object> {
+    const receipt_id = await this.getReceiptId(
+      user_uuid,
+      receipt_registration_number,
+    );
+    const results = await this.resultRepository.find({
+      where: { receipt_id },
+    });
+    const vectors = {};
+    for (let i = 0; i < 70; i++) {
+      vectors[i + 1] = {};
+    }
+    for (const result of results) {
+      const resultAnswers = await this.resultAnswerRepository.find({
+        where: {
+          receipt_registration_number: result.receipt_registration_number,
+        },
+      });
+      resultAnswers.forEach(async (resultAnswer) => {
+        if (
+          resultAnswer.result_answer_correct &&
+          resultAnswer.result_answer_vector !== 33
+        )
+          vectors[resultAnswer.receipt_judge_number][
+            vectorItems[resultAnswer.result_answer_vector - 1]
+          ]
+            ? vectors[resultAnswer.receipt_judge_number][
+                vectorItems[resultAnswer.result_answer_vector - 1]
+              ]++
+            : (vectors[resultAnswer.receipt_judge_number][
+                vectorItems[resultAnswer.result_answer_vector - 1]
+              ] = 1);
+      });
+    }
+    const receiptParticipants = results.length;
+    for (const key in vectors) {
+      const vector = vectors[key];
+      for (const key in vector) {
+        vector[key] =
+          Math.floor((vector[key] / receiptParticipants) * 1000) / 10;
+      }
+    }
+    for (const key in vectors) {
+      const vector = vectors[key];
+      const sorted = Object.keys(vector)
+        .sort((a, b) => {
+          return vector[b] - vector[a];
+        })
+        .reduce((result, key) => {
+          result[key] = vector[key];
+          return result;
+        }, {});
+      vectors[key] = sorted;
+    }
+    //fill 3 items if not 3
+    for (const key in vectors) {
+      const vector = vectors[key];
+      if (Object.keys(vector).length < 3) {
+        const length = Object.keys(vector).length;
+        for (let i = 0; i < 3 - length; i++) {
+          vector[`nan${i}`] = 0;
+        }
+      }
+    }
+    return vectors;
+  }
+
+  async getUserVectors(
+    user_uuid: string,
+    receipt_registration_number: string,
+  ): Promise<object> {
+    const vectors = {};
+    const userResultAnswers = await this.resultAnswerRepository.find({
+      where: { user_uuid, receipt_registration_number },
+      order: { receipt_judge_number: "ASC" },
+    });
+    for (let i = 0; i < 70; i++) {
+      vectors[i + 1] = {};
+      vectors[i + 1].userVector = userResultAnswers[i].result_answer_vector;
+    }
+    return vectors;
   }
 }

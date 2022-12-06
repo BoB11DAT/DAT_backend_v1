@@ -36,5 +36,6 @@ export class ReportAnswerEntity {
 
   @Column({ nullable: false, default: 0 })
   report_correct_answer_count: number;
+
   report_correct_answer_rate: Double;
 }
