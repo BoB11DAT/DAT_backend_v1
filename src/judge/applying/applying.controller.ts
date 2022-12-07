@@ -53,7 +53,7 @@ export class ApplyingController {
       this.applyingService.getUUIDFromReq(req),
       this.applyingService.getReceiptNumberFromReq(req),
       applyingAnswerData.receipt_judge_number,
-      applyingAnswerData.applying_answer,
+      applyingAnswerData.applying_answer.trim(),
     );
   }
 

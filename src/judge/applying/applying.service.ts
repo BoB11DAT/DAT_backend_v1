@@ -264,6 +264,13 @@ export class ApplyingService {
           where: { judge_id: applyingAnswer.judge_id },
           select: ["judge_answer"],
         });
+        const checkNull = (str: string) => {
+          if (str === null) {
+            return "";
+          } else {
+            return str;
+          }
+        };
         const resultAnswer = this.resultAnswerRepository.create({
           user_uuid,
           receipt_registration_number,
@@ -272,7 +279,10 @@ export class ApplyingService {
           receipt_judge_number: applyingAnswer.receipt_judge_number,
           result_answer_vector: applyingAnswer.applying_answer_vector,
           result_answer_correct:
-            applyingAnswer.applying_answer === judge.judge_answer,
+            checkNull(applyingAnswer.applying_answer)
+              .toLowerCase()
+              .replace(/\\/g, "/") ===
+            judge.judge_answer.toLowerCase().replace(/\\/g, "/"),
         });
         await this.resultAnswerRepository.save(resultAnswer);
       });
