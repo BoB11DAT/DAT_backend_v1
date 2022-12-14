@@ -13,6 +13,8 @@ import { UserEntity } from "./user.entity";
 import { AccessGuard } from "src/auth/access.guard";
 import { AdminGuard } from "src/auth/admin.guard";
 import { UpdateUser } from "./user.interface";
+import { ObjectionEntity } from "./objection.entity";
+import { CreateObjection } from "./objection.interface";
 
 @Controller({
   path: "user",
@@ -46,6 +48,36 @@ export class UserController {
     return this.userService.updateUser(
       this.userService.getUUIDFromReq(req),
       user,
+    );
+  }
+
+  @Get("objection")
+  @UseGuards(AccessGuard)
+  async getObjection(@Req() req): Promise<ObjectionEntity[]> {
+    return this.userService.getObjection(this.userService.getUUIDFromReq(req));
+  }
+
+  @Get("objection/:objection_id")
+  @UseGuards(AccessGuard)
+  async getObjectionDetail(
+    @Req() req,
+    @Body() body: { objection_id: number },
+  ): Promise<ObjectionEntity> {
+    return this.userService.getObjectionDetail(
+      this.userService.getUUIDFromReq(req),
+      body.objection_id,
+    );
+  }
+
+  @Post("objection")
+  @UseGuards(AccessGuard)
+  async createObjection(
+    @Req() req,
+    @Body() body: CreateObjection,
+  ): Promise<void> {
+    return this.userService.createObjection(
+      this.userService.getUUIDFromReq(req),
+      body,
     );
   }
 }

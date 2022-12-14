@@ -5,12 +5,16 @@ import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { UserEntity } from "./user.entity";
 import { UpdateUser } from "./user.interface";
+import { ObjectionEntity } from "./objection.entity";
+import { CreateObjection } from "./objection.interface";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(ObjectionEntity)
+    private readonly objectionRepository: Repository<ObjectionEntity>,
     private jwtService: JwtService,
     private readonly config: ConfigService,
   ) {}
@@ -44,4 +48,37 @@ export class UserService {
     await this.userRepository.save(userUpdate);
     return this.getUserByUUID(user_uuid);
   } //user role 등 바뀌는 취약점 있음
+
+  async getObjection(user_uuid: string): Promise<ObjectionEntity[]> {
+    return await this.objectionRepository.find({
+      where: { user_uuid },
+      select: [
+        "objection_id",
+        "objection_title",
+        "objection_created_date",
+        "objection_answered",
+      ],
+      order: { objection_created_date: "DESC" },
+    });
+  }
+
+  async getObjectionDetail(
+    user_uuid: string,
+    objection_id: number,
+  ): Promise<ObjectionEntity> {
+    return await this.objectionRepository.findOne({
+      where: { user_uuid, objection_id },
+    });
+  }
+
+  async createObjection(
+    user_uuid: string,
+    objection: CreateObjection,
+  ): Promise<void> {
+    const objectionCreate = this.objectionRepository.create({
+      user_uuid,
+      ...objection,
+    });
+    await this.objectionRepository.save(objectionCreate);
+  }
 }
