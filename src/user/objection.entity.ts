@@ -33,7 +33,7 @@ export class ObjectionEntity {
   @Column({ default: false })
   objection_answered: boolean;
 
-  @CreateDateColumn({ select: false })
+  @CreateDateColumn()
   objection_created_date: Date;
 
   @UpdateDateColumn({ select: false })

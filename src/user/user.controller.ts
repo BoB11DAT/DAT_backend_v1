@@ -7,6 +7,7 @@ import {
   Patch,
   Req,
   HttpCode,
+  Param,
 } from "@nestjs/common";
 import { UserService } from "./user.service";
 import { UserEntity } from "./user.entity";
@@ -60,12 +61,12 @@ export class UserController {
   @Get("objection/:objection_id")
   @UseGuards(AccessGuard)
   async getObjectionDetail(
+    @Param("objection_id") objection_id: number,
     @Req() req,
-    @Body() body: { objection_id: number },
   ): Promise<ObjectionEntity> {
     return this.userService.getObjectionDetail(
       this.userService.getUUIDFromReq(req),
-      body.objection_id,
+      objection_id,
     );
   }
 
