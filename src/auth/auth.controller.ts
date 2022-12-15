@@ -48,12 +48,6 @@ export class AuthController {
     });
     return { success: true };
   }
-  // It's because of nuxt3's useFetch() function. It doesn't work with redirect.
-  // async login(@Req() req) {
-  //   const { user } = req;
-  //   const refreshToken = await this.authService.getRefreshToken(user.user_id);
-  //   return { refreshToken };
-  // }
 
   @Get("google")
   @UseGuards(AuthGuard("google"))
