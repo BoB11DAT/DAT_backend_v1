@@ -6,7 +6,9 @@ import {
   UseGuards,
   Req,
   HttpCode,
+  Res,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { ReceiptService } from "./receipt.service";
 import { ReceiptEntity, ReceiptRegistrationEntity } from "./receipt.entity";
 import { AccessGuard } from "src/auth/access.guard";
@@ -21,7 +23,10 @@ import {
   version: "1",
 })
 export class ReceiptController {
-  constructor(private readonly receiptService: ReceiptService) {}
+  constructor(
+    private readonly receiptService: ReceiptService,
+    private readonly config: ConfigService,
+  ) {}
 
   @Get()
   @UseGuards(AccessGuard)
@@ -85,12 +90,22 @@ export class ReceiptController {
   @HttpCode(200)
   async createReceiptApplying(
     @Req() req,
+    @Res({ passthrough: true }) res,
     @Body() receiptRegistrationData: ReceiptRegistrationNumber,
   ) {
-    return this.receiptService.receiptApplying(
-      this.receiptService.getUUIDFromReq(req),
-      receiptRegistrationData.receipt_registration_number,
-    );
+    const receiptRegistrationNumber = (
+      await this.receiptService.receiptApplying(
+        this.receiptService.getUUIDFromReq(req),
+        receiptRegistrationData.receipt_registration_number,
+      )
+    ).receiptRegistrationNumber;
+    res.cookie("receiptRegistrationNumber", receiptRegistrationNumber, {
+      domain: this.config.get("SERVICE_DOMAIN"),
+      httpOnly: this.config.get("NODE_ENV") === "production",
+      secure: this.config.get("NODE_ENV") === "production",
+      maxAge: 60 * 60 * 24 * 14 * 1000,
+    });
+    return { success: true };
   }
 
   @Post("apply/continue")
@@ -98,11 +113,21 @@ export class ReceiptController {
   @HttpCode(200)
   async continueApplying(
     @Req() req,
+    @Res({ passthrough: true }) res,
     @Body() receiptRegistrationData: ReceiptRegistrationNumber,
   ) {
-    return this.receiptService.continueApplying(
-      this.receiptService.getUUIDFromReq(req),
-      receiptRegistrationData.receipt_registration_number,
-    );
+    const receiptRegistrationNumber = (
+      await this.receiptService.continueApplying(
+        this.receiptService.getUUIDFromReq(req),
+        receiptRegistrationData.receipt_registration_number,
+      )
+    ).receiptRegistrationNumber;
+    res.cookie("receiptRegistrationNumber", receiptRegistrationNumber, {
+      domain: this.config.get("SERVICE_DOMAIN"),
+      httpOnly: this.config.get("NODE_ENV") === "production",
+      secure: this.config.get("NODE_ENV") === "production",
+      maxAge: 60 * 60 * 24 * 14 * 1000,
+    });
+    return { success: true };
   }
 }

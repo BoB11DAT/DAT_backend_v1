@@ -37,24 +37,23 @@ export class AuthController {
   @Post("login")
   @HttpCode(200)
   @UseGuards(AuthGuard("local"))
-  // async login(@Req() req, @Res() res) {
-  //   console.log(req.body);
-  //   const { user } = req;
-  //   const refreshToken = await this.authService.getRefreshToken(user.user_id);
-  //   res.cookie("refreshToken", refreshToken, {
-  //     domain: this.config.get("SERVICE_DOMAIN"),
-  //     httpOnly: this.config.get("NODE_ENV") === "production",
-  //     secure: this.config.get("NODE_ENV") === "production",
-  //     maxAge: 60 * 60 * 24 * 7,
-  //   });
-  //   return res.redirect(this.config.get("FRONTEND_URL"));
-  // }
-  // It's because of nuxt3's useFetch() function. It doesn't work with redirect.
-  async login(@Req() req) {
+  async login(@Req() req, @Res({ passthrough: true }) res) {
     const { user } = req;
     const refreshToken = await this.authService.getRefreshToken(user.user_id);
-    return { refreshToken };
+    res.cookie("refreshToken", refreshToken, {
+      domain: this.config.get("SERVICE_DOMAIN"),
+      httpOnly: this.config.get("NODE_ENV") === "production",
+      secure: this.config.get("NODE_ENV") === "production",
+      maxAge: 60 * 60 * 24 * 7 * 1000,
+    });
+    return { success: true };
   }
+  // It's because of nuxt3's useFetch() function. It doesn't work with redirect.
+  // async login(@Req() req) {
+  //   const { user } = req;
+  //   const refreshToken = await this.authService.getRefreshToken(user.user_id);
+  //   return { refreshToken };
+  // }
 
   @Get("google")
   @UseGuards(AuthGuard("google"))
@@ -75,9 +74,12 @@ export class AuthController {
 
   @Get("logout")
   @UseGuards(AuthGuard("jwt-refresh-token"))
-  async logout(@Req() req) {
-    this.authService.deleteRefreshToken(req.cookies.refreshToken);
-    return;
+  async logout(@Req() req, @Res({ passthrough: true }) res) {
+    const COOKIE_OPTION = this.authService.deleteRefreshToken(
+      req.cookies.refreshToken,
+    );
+    res.clearCookie("refreshToken", COOKIE_OPTION);
+    return { success: true };
   }
 
   @Post("valid/password")

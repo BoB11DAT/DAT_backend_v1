@@ -7,6 +7,7 @@ import {
   Patch,
   Req,
   HttpCode,
+  Res,
 } from "@nestjs/common";
 import { ApplyingService } from "./applying.service";
 import { ReceiptJudgeEntity } from "../receipt/receipt.entity";
@@ -74,10 +75,15 @@ export class ApplyingController {
 
   @Get("end")
   @UseGuards(AccessGuard, ApplyingGuard)
-  async applyingEnd(@Req() req): Promise<UpdateResult> {
-    return this.applyingService.applyingEnd(
+  async applyingEnd(
+    @Req() req,
+    @Res({ passthrough: true }) res,
+  ): Promise<object> {
+    this.applyingService.applyingEnd(
       this.applyingService.getUUIDFromReq(req),
       this.applyingService.getReceiptNumberFromReq(req),
     );
+    res.clearCookie("receiptRegistrationNumber");
+    return { success: true };
   }
 }
